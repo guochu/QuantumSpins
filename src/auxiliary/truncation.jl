@@ -49,4 +49,4 @@ function _truncate!(v::AbstractVector{<:Real}, trunc::MPSTruncation, p::Real=2)
 end
 
 
-const Default_Truncation = MPSTruncation(D=200, ϵ=1.0e-6)
+const DefaultTruncation = MPSTruncation(D=200, ϵ=1.0e-6)

@@ -102,7 +102,7 @@ end
 
 rkron(x::AbstractArray, y::AbstractArray) = kron(y, x)
 
-function Base.kron(x::MPS, y::MPS; trunc::TruncationScheme=Default_Truncation)
+function Base.kron(x::MPS, y::MPS; trunc::TruncationScheme=DefaultTruncation)
     (length(x) == length(y)) || throw(DimensionMismatch())
     isempty(x) && throw(ArgumentError("input is empty."))
     T = promote_type(scalar_type(x), scalar_type(y))

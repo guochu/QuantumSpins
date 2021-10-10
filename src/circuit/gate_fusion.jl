@@ -405,5 +405,3 @@ function fuse_gates(a::QuantumCircuit)
     return _fuse_gate_impl(b')
 end
 
-# gate_fusion(circuit::AbstractCircuit) = fuse_gate(circuit)
-

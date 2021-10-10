@@ -33,15 +33,6 @@ function LinearAlgebra.tr(h::MPO)
     return scalar(hold)
 end
 
-
-# function LinearAlgebra.lmul!(f::Number, h::MPO)
-#     if !isempty(h)
-#         h[1] *= f
-#     end
-#     return h
-# end
-# LinearAlgebra.rmul!(h::MPO, f::Number) = lmul!(f, h)
-
 function Base.:*(h::MPO, f::Number)
 	T = coerce_scalar_type(scalar_type(h), typeof(f))
 	r = MPO{T}(copy(raw_data(h)))
@@ -139,9 +130,6 @@ function LinearAlgebra.ishermitian(h::MPO)
     isempty(h) && throw(ArgumentError("input operator is empty."))
     return isapprox(h, h', atol=1.0e-10) 
 end
-
-# conversion between MPO and FiniteDensityOperatorMPS
-site_dm_to_mpotensor(psij::MPSTensor, fuser::MPSTensor) = @tensor o[-1 -2; -3 -4] := psij[-1,1,-3]*fuser[-2,-4,1]
 
 
 MPO(psi::DensityOperatorMPS) = MPO([@tensor o[-1 -2; -3 -4] := psi[i][-1,1,-3]*psi.fusers[i][-2,-4,1] for i in 1:length(psi)])

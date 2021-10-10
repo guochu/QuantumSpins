@@ -19,7 +19,7 @@ struct TEBDStepper{T<:Number, C <: TruncationScheme} <: AbstractStepper
 	trunc::C
 end
 
-function TEBDStepper(;stepsize::Number, tspan::Tuple{<:Number, <:Number}=(0., stepsize), order::Int=2, trunc::TruncationScheme=Default_Truncation)
+function TEBDStepper(;stepsize::Number, tspan::Tuple{<:Number, <:Number}=(0., stepsize), order::Int=2, trunc::TruncationScheme=DefaultTruncation)
 	ti, tf = tspan
 	δ = tf - ti
 	n, stepsize = compute_step_size(δ, stepsize)
@@ -56,12 +56,12 @@ function Base.getproperty(x::TDVPStepper, s::Symbol)
 	end
 end
 
-function _change_stepsize(x::TDVP, stepsize::Number)
-	if !(x.stepsize ≈ stepsize)
-		x = TDVP(stepsize=stepsize, ishermitian=x.ishermitian, verbosity=x.verbosity)
-	end
-	return x
-end
+# function _change_stepsize(x::TDVP, stepsize::Number)
+# 	if !(x.stepsize ≈ stepsize)
+# 		x = TDVP(stepsize=stepsize, ishermitian=x.ishermitian, verbosity=x.verbosity)
+# 	end
+# 	return x
+# end
 
 function TDVPStepper(;stepsize::Number, tspan::Tuple{<:Number, <:Number}=(0., stepsize), ishermitian::Bool=false, verbosity::Int=0)
 	ti, tf = tspan
@@ -104,7 +104,7 @@ end
 # end
 
 function make_step!(h::QuantumOperator, stepper::TEBDStepper, state::MPS, x::HomogeousTEBDCache)
-	recalculate!(x, h, stepper)
+	x = recalculate!(x, h, stepper)
 	apply!(x.circuit, state, trunc=x.stepper.trunc)
 	return state, x
 end

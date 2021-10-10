@@ -162,7 +162,7 @@ function _apply_impl(key::Tuple{Int, Int, Int, Int}, m::AbstractArray{T, 8}, mps
 	return err
 end
 
-function apply!(s::AbstractQuantumGate, mps::AbstractMPS; trunc::TruncationScheme=Default_Truncation) 
+function apply!(s::AbstractQuantumGate, mps::AbstractMPS; trunc::TruncationScheme=DefaultTruncation) 
 	(length(positions(s)) <= 4) || throw(ArgumentError("only 4-body (or less) gates are currently allowed."))
 	svectors_uninitialized(mps) && canonicalize!(mps)
 	return [_apply_impl(positions(s), Array(op(s)), mps, trunc)]

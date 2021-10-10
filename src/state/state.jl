@@ -42,7 +42,7 @@ distance2(x::StateVector, y::StateVector) = _distance2(x, y)
 distance(x::StateVector, y::StateVector) = _distance(x, y)
 
 
-probs(x::StateVector) = abs2.(raw_data(x))
+# probs(x::StateVector) = abs2.(raw_data(x))
 
 
 function StateVector(psi::MPS{T}) where T
@@ -58,7 +58,7 @@ function StateVector(psi::MPS{T}) where T
 	end
 	return StateVector{T}(reshape(m, length(m)), L)
 end
-function MPS(psi::StateVector{T}; trunc::TruncationScheme=Default_Truncation) where T
+function MPS(psi::StateVector{T}; trunc::TruncationScheme=DefaultTruncation) where T
 	r = Vector{Array{T, 3}}(undef, nqubits(psi))
 	(nqubits(psi) == 0) && return MPS(r)
 	v = raw_data(psi)

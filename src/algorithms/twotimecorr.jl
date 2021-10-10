@@ -17,7 +17,6 @@ function _unitary_tt_corr_at_b(h, A::MPO, B::MPO, state, times, stepper)
 			(@isdefined cache_right) || (cache_right = timeevo_cache(h, stepper, state_right))
 			state_left, cache_left = timeevo!(state_left, h, stepper, cache_left)
 			state_right, cache_right = timeevo!(state_right, h, stepper, cache_right)
-			# println("step size $(cache_left.stepper.stepsize), $(cache_right.stepper.stepsize)")
 		end
 		push!(result, expectation(state_left, A, state_right))
 	end
@@ -39,6 +38,7 @@ function _unitary_tt_corr_a_bt(h, A::MPO, B::MPO, state, times, stepper)
 			(@isdefined cache_right) || (cache_right = timeevo_cache(h, stepper, state_right))
 			state_left, cache_left = timeevo!(state_left, h, stepper, cache_left)
 			state_right, cache_right = timeevo!(state_right, h, stepper, cache_right)
+
 		end
 		push!(result, expectation(state_left, B, state_right))
 	end
