@@ -32,10 +32,8 @@ function thermal_state(h::Union{QuantumOperator, MPO}; β::Real, stepper::Abstra
 	return normalize!(state)
 end
 
-# function evolve_and_normalize(state, h, stepper, cache)
-# end
 
-const ITIME_EVO_TOL = 1.0e-6
+const ITIME_EVO_TOL = 1.0e-5
 
 function itimeevo!(state::MPS, ham::QuantumOperator; stepper::AbstractStepper=TDVPStepper(stepsize=0.1, ishermitian=true), atol::Real=ITIME_EVO_TOL)
 	# preparation evolution
@@ -50,25 +48,37 @@ function itimeevo!(state::MPS, ham::QuantumOperator; stepper::AbstractStepper=TD
 
 	# imaginary time evolution
 	energy = expectation(ham, state, iscanonical=true)
-	new_energy = energy - 2 * atol
 	delta_t = 0.1
 	beta = 0.5
 	maxitr = 1000
 	itr = 1
-	vtol = 10^(stepper.order) * atol
-	while ( energy - new_energy >= atol) && (itr <= maxitr)
-		if (energy - new_energy < vtol) && (delta_t > vtol)
-			# scale down dt if energy is too close
-			delta_t *= (0.9 * energy / new_energy)
-		end
-		energy = new_energy
+	vtol = 10 * atol
+	err = 1.
+	# scaling_down = 0.5
+	energies = [energy]
+	while (( err >= atol) || (delta_t^(stepper.order) > atol)) && (itr <= maxitr)
 		stepper = change_tspan_dt(stepper, tspan=(0., -beta), stepsize=delta_t)
 		state, cache = timeevo!(state, ham, stepper, cache)
 		canonicalize!(state, normalize=true)
 		new_energy = expectation(ham, state, iscanonical=true)
-		println("current energy is $(new_energy) in the $itr-th iteration, current δ=$delta_t")
+		# println("current energy is $(new_energy) in the $itr-th iteration, current δ=$delta_t")
+		push!(energies, new_energy)
+		if new_energy >= energy
+			err = 1.
+			delta_t *= 0.5
+		else
+			err = energy - new_energy
+			if (err < vtol) && (delta_t^(stepper.order) > atol)
+				delta_t *= 0.9
+			end
+		end
+		# if (err < vtol) && (delta_t > vtol)
+		# 	# scale down dt if energy is too close
+		# 	delta_t *= (scaling_down * energy / new_energy)
+		# end
+		energy = new_energy
 		itr += 1
 	end
 	(itr > maxitr) && (@warn "can not converge to precision $atol in $maxitr till $(β=beta*maxitr).")
-	return new_energy, state
+	return energy, state
 end
