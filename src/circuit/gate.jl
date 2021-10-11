@@ -57,4 +57,3 @@ shift(x::AdjointQuantumGate) = AdjointQuantumGate(shift(x.parent))
 Base.adjoint(x::QuantumGate) = AdjointQuantumGate(x)
 Base.adjoint(x::AdjointQuantumGate) = x.parent
 
-

@@ -45,34 +45,34 @@ distance(x::StateVector, y::StateVector) = _distance(x, y)
 # probs(x::StateVector) = abs2.(raw_data(x))
 
 
-function StateVector(psi::MPS{T}) where T
-	for item in raw_data(psi)
-		(size(item, 2) == 2) || throw(ArgumentError("physical dimension should be 2."))
-	end
-	L = length(psi)
-	isempty(psi) && return StateVector(T, L)
-	m = reshape(psi[1], 2, size(psi[1], 3))
-	for i in 2:L
-		@tensor tmp[-1, -2, -3] := m[-1, 1] * mps[i][1, -2, -3]
-		m = tie(tmp, (2, 1))
-	end
-	return StateVector{T}(reshape(m, length(m)), L)
-end
-function MPS(psi::StateVector{T}; trunc::TruncationScheme=DefaultTruncation) where T
-	r = Vector{Array{T, 3}}(undef, nqubits(psi))
-	(nqubits(psi) == 0) && return MPS(r)
-	v = raw_data(psi)
-	m = reshape(v, Tuple([2 for i in 1:nqubits(psi)]))
-	u, s, v, bet = tsvd!(m, (1,), Tuple(2:L), trunc=trunc)
-	r[1] = reshape(u, 1, size(u)...)
-	v = reshape(Diagonal(s) * tie(v, (1, ndims(v)-1)), size(v))
-	for i in 2:L
-		u, s, v, bet = tsvd!(v, (1,2), Tuple(3:ndims(v)), trunc=trunc)
-		r[i] = u
-		v = reshape(Diagonal(s) * tie(v, (1, ndims(v)-1)), size(v))
-	end
-	r[L] = reshape(v, shape(v)..., 1)
-	mp = MPS(r)
-	rightorth!(mp, trunc=trunc)
-	return mp
-end
+# function StateVector(psi::MPS{T}) where T
+# 	for item in raw_data(psi)
+# 		(size(item, 2) == 2) || throw(ArgumentError("physical dimension should be 2."))
+# 	end
+# 	L = length(psi)
+# 	isempty(psi) && return StateVector(T, L)
+# 	m = reshape(psi[1], 2, size(psi[1], 3))
+# 	for i in 2:L
+# 		@tensor tmp[-1, -2, -3] := m[-1, 1] * mps[i][1, -2, -3]
+# 		m = tie(tmp, (2, 1))
+# 	end
+# 	return StateVector{T}(reshape(m, length(m)), L)
+# end
+# function MPS(psi::StateVector{T}; trunc::TruncationScheme=DefaultTruncation) where T
+# 	r = Vector{Array{T, 3}}(undef, nqubits(psi))
+# 	(nqubits(psi) == 0) && return MPS(r)
+# 	v = raw_data(psi)
+# 	m = reshape(v, Tuple([2 for i in 1:nqubits(psi)]))
+# 	u, s, v, bet = tsvd!(m, (1,), Tuple(2:L), trunc=trunc)
+# 	r[1] = reshape(u, 1, size(u)...)
+# 	v = reshape(Diagonal(s) * tie(v, (1, ndims(v)-1)), size(v))
+# 	for i in 2:L
+# 		u, s, v, bet = tsvd!(v, (1,2), Tuple(3:ndims(v)), trunc=trunc)
+# 		r[i] = u
+# 		v = reshape(Diagonal(s) * tie(v, (1, ndims(v)-1)), size(v))
+# 	end
+# 	r[L] = reshape(v, shape(v)..., 1)
+# 	mp = MPS(r)
+# 	rightorth!(mp, trunc=trunc)
+# 	return mp
+# end
