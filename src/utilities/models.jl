@@ -28,7 +28,7 @@ function boundary_driven_xxz(L::Int; J::Real, Jzz::Real, hz::Real, nl::Real, Λl
 	(nr >=0 && nr <=1) || error("nr must be between 0 and 1.")
 	(Λl >=0 && Λr >= 0 && Λp>= 0) || error("Λ should not be negative.")
 	sp, sm, sz = p["+"], p["-"], p["z"]
-	lindblad = superoperator(heisenberg_chain(L; J=J, Jzz=Jzz, hz=hz))
+	lindblad = superoperator(-im * heisenberg_chain(L; J=J, Jzz=Jzz, hz=hz))
 
 	gammal_plus = Λl*nl
 	gammal_minus = Λl*(1-nl)

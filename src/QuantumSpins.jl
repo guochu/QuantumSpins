@@ -28,6 +28,7 @@ export QTerm, QuantumOperator, matrix, add!, qterms, superoperator, add_unitary!
 export trotter_propagator, environments, DMRG, TDVP, sweep!, ground_state!
 # time evolve stepper
 export timeevo!, AbstractStepper, TEBDStepper, TDVPStepper, change_tspan_dt, TEBDCache, TDVPCache, timeevo_cache, correlation_2op_1t, exact_correlation_2op_1t
+export thermal_state, itimeevo!
 
 # utilities
 export spin_half_matrices, heisenberg_chain, boundary_driven_xxz
@@ -93,6 +94,7 @@ include("algorithms/groundstate.jl")
 include("algorithms/excitedstates.jl")
 include("algorithms/tdvp.jl")
 include("algorithms/timeevo.jl")
+include("algorithms/thermalstate.jl")
 include("algorithms/twotimecorr.jl")
 
 

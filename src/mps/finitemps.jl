@@ -180,14 +180,14 @@ Return all the physical spaces of MPS or MPO
 """
 physical_dimensions(psi::MPS) = [size(item, 2) for item in raw_data(psi)]
 
-function max_bond_dimensions(physpaces::Vector{Int}) 
+function max_bond_dimensions(physpaces::Vector{Int}, D::Int) 
 	L = length(physpaces)
 	left = 1
 	right = 1
 	virtualpaces = Vector{Int}(undef, L+1)
 	virtualpaces[1] = left
 	for i in 2:L
-		virtualpaces[i] = virtualpaces[i-1] * physpaces[i-1]
+		virtualpaces[i] = min(virtualpaces[i-1] * physpaces[i-1], D)
 	end
 	virtualpaces[L+1] = right
 	for i in L:-1:2
@@ -195,12 +195,12 @@ function max_bond_dimensions(physpaces::Vector{Int})
 	end
 	return virtualpaces
 end
-max_bond_dimensions(psi::MPS) = max_bond_dimensions(physical_dimensions(psi))
+max_bond_dimensions(psi::MPS, D::Int) = max_bond_dimensions(physical_dimensions(psi), D)
 
 
 function increase_bond!(psi::MPS; D::Int)
 	if bond_dimension(psi) < D
-		virtualpaces = max_bond_dimensions(physical_dimensions(psi))
+		virtualpaces = max_bond_dimensions(physical_dimensions(psi), D)
 		for i in 1:length(psi)
 			sl = max(min(virtualpaces[i], D), size(psi[i], 1))
 			sr = max(min(virtualpaces[i+1], D), size(psi[i], 3))

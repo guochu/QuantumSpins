@@ -1,4 +1,4 @@
-# push!(LOAD_PATH, dirname(Base.@__DIR__) * "/src")
+push!(LOAD_PATH, dirname(Base.@__DIR__) * "/src")
 
 using Test
 using QuantumSpins
@@ -254,7 +254,7 @@ function build_open_models_AB(h1s, h2s, p)
 		push!(terms, t')
 	end
 	ham = QuantumOperator([terms...])
-	lindblad = superoperator(ham)
+	lindblad = superoperator(-im * ham)
 
 	# add_dissipation!(lindblad, QTerm(2=>sz, coeff=0.9))
 

@@ -50,7 +50,7 @@ scalar_type(psi::DensityOperatorMPS) = scalar_type(typeof(psi))
 Base.eltype(::Type{DensityOperatorMPS{A, B}}) where {A, B} = A
 scalar_type(::Type{DensityOperatorMPS{A, B}}) where {A, B} = eltype(A)
 Base.setindex!(psi::DensityOperatorMPS, v, i::Int) = setindex!(psi.data, v, i)
-Base.copy(psi::DensityOperatorMPS) = DensityOperatorMPS(copy(psi.data))
+Base.copy(psi::DensityOperatorMPS) = DensityOperatorMPS(copy(psi.data), psi.fusers, psi.I)
 Base.isapprox(x::DensityOperatorMPS, y::DensityOperatorMPS; kwargs...) = isapprox(x.data, y.data; kwargs...)
 
 bond_dimension(psi::DensityOperatorMPS, bond::Int) = bond_dimension(psi.data, bond)
@@ -67,4 +67,5 @@ increase_bond!(psi::DensityOperatorMPS; kwargs...) = begin
 end
 
 canonicalize!(psi::DensityOperatorMPS; kwargs...) = canonicalize!(psi.data; kwargs...)
+default_fusers(::Type{T}, ds::Vector{Int}) where {T<:Number} = [reshape(_eye(T, d*d), d, d, d*d) for d in ds]
 

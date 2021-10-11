@@ -34,8 +34,7 @@ prodmps(ds::Vector{Int}, physectors::Vector{Int}) = prodmps(Float64, ds, physect
 
 
 function randommps(::Type{T}, physpaces::Vector{Int}; D::Int) where {T <: Number}
-	virtualpaces = max_bond_dimensions(physpaces)
-	virtualpaces = [min(item, D) for item in virtualpaces]
+	virtualpaces = max_bond_dimensions(physpaces, D)
 	return MPS(randn, T, physpaces, virtualpaces)
 end
 randommps(physpaces::Vector{Int}; D::Int) = randommps(Float64, physpaces; D=D)

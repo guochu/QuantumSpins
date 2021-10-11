@@ -8,10 +8,12 @@ function LinearAlgebra.dot(psiA::MPS, psiB::MPS)
     end
     return tr(hold)
 end
+LinearAlgebra.dot(psiA::DensityOperatorMPS, psiB::DensityOperatorMPS) = dot(psiA.data, psiB.data)
 
 function LinearAlgebra.norm(psi::MPS; iscanonical::Bool=false) 
 	iscanonical ? norm(psi[1]) : sqrt(real(dot(psi, psi)))
 end
+LinearAlgebra.norm(psi::DensityOperatorMPS; kwargs...) = norm(psi.data; kwargs...)
 
 
 
@@ -20,17 +22,19 @@ end
 Square of Euclidean distance between a and b.
 """
 distance2(a::MPS, b::MPS) = _distance2(a, b)
+distance2(a::DensityOperatorMPS, b::DensityOperatorMPS) = distance2(a.data, b.data)
 
 """
     distance(a, b)
 Euclidean distance between a and b.
 """
 distance(a::MPS, b::MPS) = _distance(a, b)
+distance(a::DensityOperatorMPS, b::DensityOperatorMPS) = distance(a.data, b.data)
 
 
 function LinearAlgebra.normalize!(psi::MPS; iscanonical::Bool=false)
     n = norm(psi, iscanonical=iscanonical)
-    (n ≈ 0.) && @warn "quantum state has zero norm."
+    (n ≈ zero(n)) && @warn "quantum state has zero norm."
     if n != one(n)
         if iscanonical
             psi[1] = psi[1] / n
@@ -56,7 +60,7 @@ Base.:/(psi::MPS, f::Number) = psi * (1/f)
 
 function LinearAlgebra.normalize!(psi::DensityOperatorMPS)
     n = tr(psi)
-    (n ≈ 0.) && @warn "density operator has zero trace."
+    (n ≈ zero(n)) && @warn "density operator has zero trace."
     if n != one(n)
         factor = n^(1 / length(psi))
         for i in 1:length(psi)
@@ -93,10 +97,9 @@ Base.:-(psi::MPS) = -1 * psi
 const MPS_APPROX_EQUAL_ATOL = 1.0e-14
 Base.isapprox(psiA::MPS, psiB::MPS; atol=MPS_APPROX_EQUAL_ATOL) = distance2(psiA, psiB) <= atol
 
-
 function infinite_temperature_state(::Type{T}, ds::Vector{Int}) where {T <: Number}
 	iden = identity_mps(T, ds)
-	state = DensityOperatorMPS(copy(iden), iden)
+	state = DensityOperatorMPS(copy(iden), default_fusers(T, ds), iden)
 	return normalize!(state)
 end
 
@@ -139,7 +142,7 @@ end
 function DensityOperator(psi::MPS; kwargs...)
     T = scalar_type(psi)
     rho = kron(psi, psi'; kwargs...)
-    fusers = [reshape(_eye(T, size(item, 2)*size(item, 2)), size(item, 2), size(item, 2), size(item, 2)*size(item, 2)) for item in raw_data(psi)]
-    return DensityOperatorMPS(rho, fusers, identity_mps(scalar_type(psi), physical_dimensions(psi)))
+    ds = physical_dimensions(psi)
+    return DensityOperatorMPS(rho, default_fusers(T, ds), identity_mps(T, ds))
 end 
 

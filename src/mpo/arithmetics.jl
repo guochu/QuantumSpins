@@ -135,10 +135,11 @@ end
 MPO(psi::DensityOperatorMPS) = MPO([@tensor o[-1 -2; -3 -4] := psi[i][-1,1,-3]*psi.fusers[i][-2,-4,1] for i in 1:length(psi)])
 function DensityOperator(h::MPO)
     T = scalar_type(h)
-    fusers = [reshape(_eye(T, size(m, 2) * size(m, 4)), size(m, 2), size(m, 4), size(m, 2) * size(m, 4)) for m in raw_data(h)]
+    # fusers = [reshape(_eye(T, size(m, 2) * size(m, 4)), size(m, 2), size(m, 4), size(m, 2) * size(m, 4)) for m in raw_data(h)]
+    ds = physical_dimensions(h)
+    fusers = default_fusers(T, ds)
     mps = MPS([@tensor o[-1 -2; -3] := m[-1,1,-3,2] * conj(fj[1,2,-2])  for (fj, m) in zip(fusers, raw_data(h))])
-
-    return DensityOperatorMPS(mps, fusers, identity_mps(T, physical_dimensions(h)))
+    return DensityOperatorMPS(mps, fusers, identity_mps(T, ds))
 end
 
 expectation(h::MPO, psi::DensityOperatorMPS) = expectation(psi.I, h, psi.data)

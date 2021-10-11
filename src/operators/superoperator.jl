@@ -94,12 +94,12 @@ end
 
 """
 	superoperator(h::QuantumOperator, f)
-	-ihρ + iρ conj(h)
+	hρ + ρ conj(h)
 """
 function superoperator(h::QuantumOperator)
 	terms = []
 	for t in qterms(h)
-		x2 = -im * t
+		x2 = t
 		iden = id(t)
 		push!(terms, superoperator(x2, iden))
 		push!(terms, superoperator(iden, x2))
