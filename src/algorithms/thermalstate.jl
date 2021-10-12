@@ -35,7 +35,10 @@ end
 
 const ITIME_EVO_TOL = 1.0e-5
 
-function itimeevo!(state::MPS, ham::QuantumOperator; stepper::AbstractStepper=TDVPStepper(stepsize=0.1, ishermitian=true), atol::Real=ITIME_EVO_TOL)
+_expec(h::QuantumOperator, state) = expectation(h, state, iscanonical=true)
+_expec(h::MPO, state) = expectation(h, state)
+
+function itimeevo!(state::MPS, ham::Union{QuantumOperator, MPO}; stepper::AbstractStepper=TDVPStepper(stepsize=0.1, ishermitian=true), atol::Real=ITIME_EVO_TOL)
 	# preparation evolution
 	stepper = change_tspan_dt(stepper, tspan=(0., -1), stepsize=1)
 	state, cache = timeevo!(state, ham, stepper)
@@ -47,7 +50,7 @@ function itimeevo!(state::MPS, ham::QuantumOperator; stepper::AbstractStepper=TD
 	# end
 
 	# imaginary time evolution
-	energy = expectation(ham, state, iscanonical=true)
+	energy = _expec(ham, state)
 	delta_t = 0.1
 	beta = 0.5
 	maxitr = 1000
@@ -60,7 +63,7 @@ function itimeevo!(state::MPS, ham::QuantumOperator; stepper::AbstractStepper=TD
 		stepper = change_tspan_dt(stepper, tspan=(0., -beta), stepsize=delta_t)
 		state, cache = timeevo!(state, ham, stepper, cache)
 		canonicalize!(state, normalize=true)
-		new_energy = expectation(ham, state, iscanonical=true)
+		new_energy = _expec(ham, state)
 		# println("current energy is $(new_energy) in the $itr-th iteration, current δ=$delta_t")
 		push!(energies, new_energy)
 		if new_energy >= energy

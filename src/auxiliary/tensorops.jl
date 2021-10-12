@@ -1,4 +1,5 @@
 using LinearAlgebra: BlasFloat, LAPACK
+using LinearAlgebra.BLAS: gemm, gemm!
 
 is_zero(x::AbstractMatrix) = isapprox(x, zero(x))
 scalar_type(::Type{<:AbstractArray{T}}) where {T <: Number} = T
@@ -322,6 +323,34 @@ function _leftnull_svd!(A::StridedMatrix{<:BlasFloat}, atol::Real)
     return U[:, indstart:end]
 end
 
+# # m must be a square matrix
+# function apply_physical!(m::StridedMatrix{T}, v::StridedArray{T, 3}, workspace::AbstractVector{T}) where T
+#     L = size(m, 1) * size(v, 1)
+#     if length(workspace) < L
+#         resize!(workspace, L)
+#     end
+#     mv = reshape(view(workspace, 1:L), size(m, 1), size(v, 1))
+#     beta = zero(T)
+#     alpha = one(T)
+#     for i in 1:size(v, 3)
+#         vj = view(v, :, :, i)
+#         gemm!('N', 'T', alpha, vj, m, beta, mv)
+#         copy!(mv, vj)
+#     end
+#     return v
+# end
+
+# function apply_physical!(m::StridedMatrix{T}, vi::StridedArray{T, 3}, vo::StridedArray{T, 3}) where {T <: Number}
+#     beta = zero(T)
+#     alpha = one(T)
+#     for i in 1:size(vi, 3)
+#         vij = view(vi, :, :, i)
+#         voj = view(vo, :, :, i)
+#         gemm!('N', 'T', alpha, vij, m, beta, voj)
+#     end
+#     return vo
+# end
+# apply_physical!(m::StridedArray{T, 4}, vi::StridedArray{T, 4}, vo::StridedArray{T, 4}) where T = apply_physical!(tie(m, (2,2)), tie(vi, (1,2,1)), tie(vo, (1,2,1)))
 
 
 

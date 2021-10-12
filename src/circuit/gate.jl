@@ -14,6 +14,7 @@ function _get_norm_order(key::NTuple{N, Int}, p) where N
 end
 _shift(key::NTuple{N, Int}, i::Int) where N = NTuple{N, Int}(l+i for l in key)
 
+const MAXIMUM_GATE_RANGE = 4
 
 """
 	struct QuantumGate{N, M<:AbstractArray} <: AbstractQuantumGate{N}
@@ -24,6 +25,7 @@ struct QuantumGate{N, M<:AbstractArray} <: AbstractQuantumGate{N}
 
 function QuantumGate(positions::NTuple{N, Int}, m::AbstractArray{T, K}) where {N, T, K}
 	(K == 2 * N) || throw(ArgumentError("input array rank mismatch with positions."))
+	(N <= MAXIMUM_GATE_RANGE) || throw(ArgumentError("only less than $MAXIMUM_GATE_RANGE-body gate supported."))
 	positions, m = _get_norm_order(positions, m)
 	new{N, typeof(m)}(positions, m)
 end

@@ -45,7 +45,7 @@ function _rightsweep!(m::ExpectationCache, alg::TDVP)
 		(alg.verbosity > 2) && println("sweeping from right to left at site: $site.")
 
 		v, Q = tlq!(mps[site+1], (1,), (2,3), workspace) 
-		mps[site+1] = permute(Q, (1, 2), (3,))
+		mps[site+1] = Q
 		hnew = updateright(hstorage[site+2], mps[site+1], mpo[site+1], mps[site+1])
 
 		v, info = exponentiate(x->c_prime(x, hstorage[site+1], hnew), -dt/2, v, driver)

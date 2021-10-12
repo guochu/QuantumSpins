@@ -36,6 +36,7 @@ Base.similar(s::QuantumOperator{T}) where T = QuantumOperator{T}()
 Base.keys(x::QuantumOperator) = keys(x.data)
 physical_dimensions(x::QuantumOperator) = convert(Vector{Int}, x.physpaces)
 
+
 function is_constant(x::QuantumOperator)
 	for (k, v) in x.data
 		for (m, c) in v
@@ -79,6 +80,7 @@ Base.:*(y::Union{Number, Function, Coefficient}, x::QuantumOperator) = x * y
 Base.:/(x::QuantumOperator, y::Union{Number, Function, Coefficient}) = x * (1 / Coefficient(y))
 Base.:+(x::QuantumOperator) = x
 Base.:-(x::QuantumOperator) = x * (-1)
+Base.adjoint(x::QuantumOperator) = QuantumOperator(x.physpaces, data_type(x)(k=>[(adjoint.(a), conj(b)) for (a, b) in v] for (k, v) in x.data))
 
 function _merge_spaces(x, y)
 	L = max(length(x), length(y))

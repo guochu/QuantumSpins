@@ -2,7 +2,7 @@ module QuantumSpins
 
 using Logging: @warn
 using SparseArrays, Parameters, KrylovKit, TensorOperations
-using LinearAlgebra: Diagonal, dot, norm, tr, normalize!, normalize
+using LinearAlgebra: Diagonal, dot, norm, tr, mul!, normalize!, normalize
 import LinearAlgebra
 
 # auxiliary
