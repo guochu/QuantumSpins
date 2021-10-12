@@ -6,7 +6,7 @@ function _swap_gate(svectorj1, mpsj1, svectorj2, mpsj2, trunc::TruncationScheme)
 	twositemps1 = reshape(Diagonal(svectorj1) * tie(twositemps, (1, 3)), size(twositemps))
 	u, s, v, err = tsvd!(twositemps1, (1,2), (3,4), trunc=trunc)
 	@tensor u[-1 -2; -3] = twositemps[-1,-2,1,2] * conj(v[-3,1,2])
-	return u, s, permute(v, (1,2), (3,)), err
+	return u, s, v, err
 end
 
 function bond_evolution(bondmpo, svectorj1, mpsj1, svectorj2, mpsj2, trunc::TruncationScheme)
@@ -16,7 +16,7 @@ function bond_evolution(bondmpo, svectorj1, mpsj1, svectorj2, mpsj2, trunc::Trun
 	# to remove very small numbers
 	u, s, v, err = tsvd!(twositemps1, (1,2), (3,4), trunc=trunc)
 	@tensor u[-1 -2; -3] = twositemps[-1,-2,1,2] * conj(v[-3,1,2])
-	return u, s, permute(v, (1,2), (3,)), err	
+	return u, s, v, err	
 end
 
 
@@ -32,7 +32,7 @@ function bond_evolution3(bondmpo, svectorj1, mpsj1, svectorj2, mpsj2, svectorj3,
 
 	u2, s2, v2, err2 = tsvd!(v1, (1,2), (3,4), trunc=trunc)
 	@tensor u2[-1 -2; -3] = v[-1,-2,1,2] *conj(v2[-3,1,2])
-	return u, s, u2, s2, permute(v2, (1,2), (3,)), max(err1, err2)
+	return u, s, u2, s2, v2, max(err1, err2)
 end
 
 function bond_evolution4(bondmpo, svectorj1, mpsj1, svectorj2, mpsj2, svectorj3, mpsj3, svectorj4, mpsj4, trunc::TruncationScheme)
@@ -52,7 +52,7 @@ function bond_evolution4(bondmpo, svectorj1, mpsj1, svectorj2, mpsj2, svectorj3,
 	v1 = reshape(Diagonal(s2) * tie(v, (1, 3)), size(v))
 	u3, s3, v3, err3 = tsvd!(v1, (1,2), (3,4), trunc=trunc)
 	@tensor u3[-1 -2; -3] = v[-1,-2,1,2] * conj(v3[-3,1,2])
-	return u, s, u2, s2, u3, s3, permute(v3, (1,2), (3,)), max(err1, err2, err3)
+	return u, s, u2, s2, u3, s3, v3, max(err1, err2, err3)
 end
 
 function _move!(psi::AbstractMPS, i::Int, j::Int, trunc::TruncationScheme)
