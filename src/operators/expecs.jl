@@ -77,7 +77,7 @@ end
 """
 expectation(m::QTerm, psi::DensityOperatorMPS, envs=environments(psi)) = expectation(psi.I, m, psi.data, envs)
 
-function expectation(m::QuantumOperator, psi::DensityOperatorMPS)
+function expectation(h::SuperOperatorBase, psi::DensityOperatorMPS)
 	envs = environments(psi)
 	r = 0.
 	for m in qterms(h)
@@ -85,3 +85,9 @@ function expectation(m::QuantumOperator, psi::DensityOperatorMPS)
 	end
 	return r
 end
+expectation(h::QuantumOperator, psi::DensityOperatorMPS) = expectation(
+	SuperOperatorBase(QuantumOperator([superoperator(item, id(item)) for item in qterms(h)])), psi)
+
+
+
+
