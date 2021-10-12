@@ -1,6 +1,6 @@
 
 function ac_prime(x::MPSTensor, m::MPOTensor, hleft::MPSTensor, hright::MPSTensor) 
-	@tensor tmp[-1 -2; -3] := hleft[-1, 1, 2] * x[2,3,4] * m[1,-2,5,3] * hright[-3,5,4]
+	@tensor tmp[-1 -2; -3] := ((hleft[-1, 1, 2] * x[2,3,4]) * m[1,-2,5,3]) * hright[-3,5,4]
 end
 
 
@@ -10,6 +10,6 @@ end
 
 
 function c_prime(x::AbstractMatrix, hleft::MPSTensor, hright::MPSTensor)
-    @tensor tmp[-1; -2] := hleft[-1, 1, 2] * x[2, 3] * hright[-2, 1, 3]
+    @tensor tmp[-1; -2] := (hleft[-1, 1, 2] * x[2, 3]) * hright[-2, 1, 3]
 end
 
