@@ -27,6 +27,7 @@ end
 _eye(::Type{T}, d::Int) where {T<:Number} = _eye(T, d, d)
 _eye(d::Int) = _eye(Float64, d)
 
+diag(m::AbstractVector{<: Number}) = LinearAlgebra.diagm(0=>m)
 
 coerce_scalar_type(::Type{T}, ::Type{S}) where {T <: Union{Real, Complex}, S <: Real} = T
 coerce_scalar_type(::Type{T}, ::Type{S}) where {T <: Complex, S <: Complex} = T

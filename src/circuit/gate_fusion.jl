@@ -54,6 +54,7 @@ function _try_mul_two_ops_impl(ka::Int, ma, kb::Int, mb)
     end
     return nothing
 end
+_try_mul_two_ops_impl(ka::Tuple{Int}, ma, kb::Tuple{Int}, mb) = _try_mul_two_ops_impl(ka[1], ma, kb[1], mb)
 
 # 1, 2
 function _try_mul_two_ops_impl(ka::Int, ma, kb::Tuple{Int, Int}, mb)
@@ -69,6 +70,7 @@ function _try_mul_two_ops_impl(ka::Int, ma, kb::Tuple{Int, Int}, mb)
     end
     return nothing
 end
+_try_mul_two_ops_impl(ka::Tuple{Int}, ma, kb::Tuple{Int, Int}, mb) = _try_mul_two_ops_impl(ka[1], ma, kb, mb)
 
 # 1, 3
 function _try_mul_two_ops_impl(ka::Int, ma, kb::Tuple{Int, Int, Int}, mb)
@@ -88,6 +90,7 @@ function _try_mul_two_ops_impl(ka::Int, ma, kb::Tuple{Int, Int, Int}, mb)
     end
     return nothing
 end
+_try_mul_two_ops_impl(ka::Tuple{Int}, ma, kb::Tuple{Int, Int, Int}, mb) = _try_mul_two_ops_impl(ka[1], ma, kb, mb)
 
 # 1, 4
 function _try_mul_two_ops_impl(ka::Int, ma, kb::Tuple{Int, Int, Int, Int}, mb)
@@ -111,6 +114,7 @@ function _try_mul_two_ops_impl(ka::Int, ma, kb::Tuple{Int, Int, Int, Int}, mb)
     end
     return nothing
 end
+_try_mul_two_ops_impl(ka::Tuple{Int}, ma, kb::Tuple{Int, Int, Int, Int}, mb) = _try_mul_two_ops_impl(ka[1], ma, kb, mb)
 
 # 2, 1
 function _try_mul_two_ops_impl(ka::Tuple{Int, Int}, ma, kb::Int, mb)
@@ -126,6 +130,7 @@ function _try_mul_two_ops_impl(ka::Tuple{Int, Int}, ma, kb::Int, mb)
     end
     return nothing
 end
+_try_mul_two_ops_impl(ka::Tuple{Int, Int}, ma, kb::Tuple{Int}, mb) = _try_mul_two_ops_impl(ka, ma, kb[1], mb)
 
 # 2, 2
 function _try_mul_two_ops_impl(ka::Tuple{Int, Int}, ma, kb::Tuple{Int, Int}, mb)
@@ -205,6 +210,7 @@ function _try_mul_two_ops_impl(ka::Tuple{Int, Int, Int}, ma, kb::Int, mb)
     end
     return nothing
 end
+_try_mul_two_ops_impl(ka::Tuple{Int, Int, Int}, ma, kb::Tuple{Int}, mb) = _try_mul_two_ops_impl(ka, ma, kb[1], mb)
 
 # 3, 2
 function _try_mul_two_ops_impl(ka::Tuple{Int, Int, Int}, ma, kb::Tuple{Int, Int}, mb)
@@ -281,6 +287,7 @@ function _try_mul_two_ops_impl(ka::Tuple{Int, Int, Int, Int}, ma, kb::Int, mb)
     end
     return nothing
 end
+_try_mul_two_ops_impl(ka::Tuple{Int, Int, Int, Int}, ma, kb::Tuple{Int}, mb) = _try_mul_two_ops_impl(ka, ma, kb[1], mb)
 
 # 4, 2
 function _try_mul_two_ops_impl(ka::Tuple{Int, Int, Int, Int}, ma, kb::Tuple{Int, Int}, mb)

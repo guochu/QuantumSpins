@@ -1,9 +1,4 @@
 
-
-# const AbstractOneBodyGate = AbstractQuantumGate{1}
-# const AbstractTwoBodyGate = AbstractQuantumGate{2}
-# const AbstractThreeBodyGate = AbstractQuantumGate{3}
-
 scalar_type(x::AbstractQuantumGate) = scalar_type(typeof(x))
 
 
@@ -35,10 +30,10 @@ QuantumGate(positions::Vector{Int}, m::AbstractArray) = QuantumGate(Tuple(positi
 QuantumGate(positions::Int, m::AbstractMatrix) = QuantumGate((positions,), m)
 
 
-positions(x::QuantumGate) = x.positions
+positions(x::AbstractQuantumGate) = x.positions
 op(x::QuantumGate) = x.op
 scalar_type(::Type{QuantumGate{N, M}}) where {N, M} = eltype(M)
-shift(x::QuantumGate) = QuantumGate(_shift(positions(x)), op(x))
+shift(x::QuantumGate, i::Int) = QuantumGate(_shift(positions(x), i), op(x))
 
 
 
@@ -56,6 +51,6 @@ op(s::AdjointQuantumGate{N, G}) where {N, G} = permute(conj(op(s.parent)), _get_
 scalar_type(::Type{AdjointQuantumGate{N, G}}) where {N, G} = scalar_type(G)
 shift(x::AdjointQuantumGate) = AdjointQuantumGate(shift(x.parent))
 
-Base.adjoint(x::QuantumGate) = AdjointQuantumGate(x)
+Base.adjoint(x::AbstractQuantumGate) = AdjointQuantumGate(x)
 Base.adjoint(x::AdjointQuantumGate) = x.parent
 

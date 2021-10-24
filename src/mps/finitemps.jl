@@ -22,6 +22,11 @@ function MPS{T, R}(data::Vector{Array{T, 3}}, svectors::Vector{Array{R, 1}}) whe
 	new{T, R}(data, svectors)
 end
 
+function MPS{T, R}(L::Int) where {T<:Number, R<:Number}
+	(R == real(T)) || throw(ArgumentError("scalar type for singular vectors must be real."))
+	new{T, R}(Vector{Array{T, 3}}(undef, L), Vector{Array{R, 1}}(undef, L+1))
+end 
+
 end
 
 
@@ -42,7 +47,7 @@ function MPS{T}(data::Vector{<:MPSTensor{C}}) where {T<:Number, C<:Number}
 	return MPS{T, R}(convert(Vector{Array{T, 3}}, data), svectors)
 end
 MPS(data::Vector{<:MPSTensor{T}}) where {T <: Number} = MPS{T}(data)
-
+MPS{T}(L::Int) where {T<:Number} = MPS{T, real(T)}(L)
 
 """
 	The raw mps data as a list of 3-dimension tensors

@@ -7,6 +7,8 @@ struct QuantumCircuit <: AbstractQuantumCircuit
 end
 
 QuantumCircuit() = QuantumCircuit(Vector{AbstractQuantumGate{N} where N}())
+QuantumCircuit(data::Vector{<:AbstractQuantumGate}) = QuantumCircuit(convert(Vector{AbstractQuantumGate{N} where N}, data))
+QCircuit() = QuantumCircuit()
 
 raw_data(x::QuantumCircuit) = x.data
 
@@ -39,6 +41,8 @@ Base.adjoint(x::QuantumCircuit) = QuantumCircuit(Vector{AbstractQuantumGate{N} w
 
 Base.similar(x::QuantumCircuit) = QuantumCircuit()
 Base.copy(x::QuantumCircuit) = QuantumCircuit(copy(raw_data(x)))
+
+shift(x::QuantumCircuit, i::Int) = QuantumCircuit([shift(item, i) for item in raw_data(x)])
 
 Base.:*(x::QuantumCircuit, y::QuantumCircuit) = QuantumCircuit(vcat(raw_data(y), raw_data(x)))
 
