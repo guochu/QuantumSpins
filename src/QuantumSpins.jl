@@ -28,7 +28,7 @@ export QTerm, QuantumOperator, matrix, add!, qterms, superoperator, add_unitary!
 export trotter_propagator, environments, DMRG, TDVP, sweep!, ground_state!
 # time evolve stepper
 export timeevo!, AbstractStepper, TEBDStepper, TDVPStepper, change_tspan_dt, TEBDCache, TDVPCache, timeevo_cache, correlation_2op_1t, exact_correlation_2op_1t
-export thermal_state, itimeevo!
+export mixed_thermalize, thermal_state, itimeevo!
 
 # quantum circuit simulator
 export ZERO, ONE, X, Y, Z, S, H, sqrtX, sqrtY, T, Rx, Ry, Rz, CONTROL, CZ, CNOT, CX, SWAP, iSWAP
