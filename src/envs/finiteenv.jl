@@ -1,10 +1,10 @@
 
-function init_hstorage(mpo::MPO, mps::MPS, center::Int)
-	# (length(mpo) == length(mps)) || throw(DimensionMismatch())
-	# (mod(length(mps), period(mpo))==0) || throw(DimensionMismatch())
+function init_hstorage!(hstorage::Vector, mpo::MPO, mps::MPS, center::Int)
+	(length(mpo) == length(mps)) || throw(DimensionMismatch())
+	(length(mps)+1 == length(hstorage)) || throw(DimensionMismatch())
 	right = r_RR(mps, mpo, mps)
 	L = length(mps)
-	hstorage = Vector{typeof(right)}(undef, L+1)
+	# hstorage = Vector{typeof(right)}(undef, L+1)
 	hstorage[L+1] = right
 	hstorage[1] = l_LL(mps, mpo, mps)
 	for i in L:-1:center+1
@@ -13,7 +13,13 @@ function init_hstorage(mpo::MPO, mps::MPS, center::Int)
 	for i in 1:center-1
 		hstorage[i+1] = updateleft(hstorage[i], mps[i], mpo[i], mps[i])
 	end
-	return hstorage
+	return hstorage	
+end
+
+function init_hstorage(mpo::MPO, mps::MPS, center::Int)
+	T = promote_type(scalar_type(mpo), scalar_type(mps))
+	hstorage = Vector{Array{T, 3}}(undef, length(mps)+1)
+	return init_hstorage!(hstorage, mpo, mps, center)
 end
 
 init_hstorage_right(mpo::MPO, mps::MPS) = init_hstorage(mpo, mps, 1)
@@ -36,6 +42,20 @@ function Base.getproperty(m::ExpectationCache, s::Symbol)
 		return m.hstorage
 	else
 		return getfield(m, s)
+	end
+end
+
+function recalculate!(m::ExpectationCache, mps::MPS, center::Int)
+	if mps !== m.state
+		init_hstorage!(m.env, m.h, mps, center)
+	end
+end
+
+function increase_bond!(m::ExpectationCache; D::Int)
+	if bond_dimension(m.state) < D
+		increase_bond!(m.state, D=D)
+		canonicalize!(m.state, normalize=false)
+		init_hstorage!(m.env, m.h, m.state, 1)
 	end
 end
 

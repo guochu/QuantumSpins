@@ -63,16 +63,16 @@ end
 # 	return x
 # end
 
-function TDVPStepper(;stepsize::Number, tspan::Tuple{<:Number, <:Number}=(0., stepsize), ishermitian::Bool=false, verbosity::Int=0)
+function TDVPStepper(;stepsize::Number, D::Int=Defaults.D, tspan::Tuple{<:Number, <:Number}=(0., stepsize), ishermitian::Bool=false, verbosity::Int=0)
 	ti, tf = tspan
 	δ = tf - ti	
 	n, stepsize = compute_step_size(δ, stepsize)
 	T = promote_type(typeof(ti), typeof(tf), typeof(stepsize))
-	return TDVPStepper((convert(T, ti), convert(T, tf)), n, TDVP(stepsize=convert(T, stepsize), ishermitian=ishermitian, verbosity=verbosity))
+	return TDVPStepper((convert(T, ti), convert(T, tf)), n, TDVP(D=D, stepsize=convert(T, stepsize), ishermitian=ishermitian, verbosity=verbosity))
 end
 
 change_tspan_dt(x::TDVPStepper; tspan::Tuple{<:Number, <:Number}, stepsize::Number=x.stepsize) = TDVPStepper(
-	tspan=tspan, stepsize=stepsize, ishermitian=x.alg.ishermitian, verbosity=x.alg.verbosity)
+	tspan=tspan, D=x.alg.D, stepsize=stepsize, ishermitian=x.alg.ishermitian, verbosity=x.alg.verbosity)
 
 
 mutable struct HomogeousTEBDCache{H<:QuantumOperator, C<:QuantumCircuit, S<:TEBDStepper} <: AbstractCache

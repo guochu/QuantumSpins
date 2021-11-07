@@ -2,13 +2,15 @@ abstract type TDVPAlgorithm end
 
 struct TDVP{T} <: TDVPAlgorithm
 	stepsize::T
+	D::Int 
 	ishermitian::Bool
 	verbosity::Int
 end
 
-TDVP(; stepsize::Number, ishermitian::Bool=false, verbosity::Int=1) = TDVP(stepsize, ishermitian, verbosity)
+TDVP(; stepsize::Number, D::Int=Defaults.D, ishermitian::Bool=false, verbosity::Int=1) = TDVP(stepsize, D, ishermitian, verbosity)
 
 function _leftsweep!(m::ExpectationCache, alg::TDVP)
+	increase_bond!(m, D=alg.D)
 	mpo = m.mpo
 	mps = m.mps
 	hstorage = m.env

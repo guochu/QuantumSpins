@@ -4,17 +4,14 @@ mixed_thermalize(m::QTerm) = superoperator(m, id(m))
 mixed_thermalize(h::QuantumOperator) = SuperOperatorBase(QuantumOperator([mixed_thermalize(item) for item in qterms(h)]))
 mixed_thermalize(h::MPO) = kron(h, id(h))
 
-function thermal_state(h::Union{QuantumOperator, MPO}; β::Real, stepper::AbstractStepper=TEBDStepper(stepsize=0.05, order=4), D::Union{Int, Nothing}=nothing) 
+function thermal_state(h::Union{QuantumOperator, MPO}; β::Real, stepper::AbstractStepper=TEBDStepper(stepsize=0.05, order=4)) 
 	(isa(stepper, TEBDStepper) && isa(h, MPO)) && throw(ArgumentError("TEBD can not be used with MPO."))
 	beta = convert(Float64, β)
 	((beta >= 0.) && (beta != Inf)) || throw(ArgumentError("β expected to be finite."))
 	state = infinite_temperature_state(scalar_type(h), physical_dimensions(h))
-	(beta == 0.) && return state
-	if isa(stepper, TDVPStepper)
-		isa(D, Int) || throw(ArgumentError("D must be given in case of TDVPStepper."))
-		state = increase_bond!(state, D=D)
-	end
 	canonicalize!(state, normalize=true)
+	(beta == 0.) && return state
+	
 
 	# superh = superoperator(h)
 	superh = mixed_thermalize(h)

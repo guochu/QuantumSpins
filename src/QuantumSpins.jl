@@ -44,6 +44,7 @@ export spin_half_matrices, heisenberg_chain, boundary_driven_xxz
 
 module Defaults
 	const maxiter = 100
+	const D = 50
 	const tolgauge = 1e-14
 	const tol = 1e-12
 	const verbosity = 1

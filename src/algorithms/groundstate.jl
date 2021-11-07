@@ -1,6 +1,7 @@
 abstract type DMRGAlgorithm end
 
 @with_kw struct DMRG <: DMRGAlgorithm 
+	D::Int = Defaults.D
 	maxiter::Int = Defaults.maxiter
 	tol::Float64 = Defaults.tol
 	verbosity::Int = Defaults.verbosity
@@ -17,6 +18,8 @@ end
 
 # delayed evaluation of galerkin error.
 function leftsweep!(m::ExpectationCache, alg::DMRG)
+	# try increase the bond dimension if the bond dimension of the state is less than D given by alg
+	increase_bond!(m, D=alg.D)
 	mpo = m.mpo
 	mps = m.mps
 	hstorage = m.env
