@@ -7,7 +7,7 @@ function _check_mps_space(mpstensors::Vector)
 
 	# just require the left boundary to be a single sector
 	(size(mpstensors[1], 1) == 1) || throw(DimensionMismatch("left boundary should be size 1."))
-	(size(mpstensors[L], 3) == 1) || throw(DimensionMismatch("right boundary should be size 1."))
+	# (size(mpstensors[L], 3) == 1) || throw(DimensionMismatch("right boundary should be size 1."))
 	return true
 end
 
@@ -127,10 +127,12 @@ function maybe_init_boundary_s!(psi::MPS{T, R}) where {T, R}
 	L = length(psi)
 	if !isassigned(raw_singular_matrices(psi), 1)
 		# (dim(space(psi[1], 1)) == 1) || throw(SpaceMismatch())
-		psi.s[1] = ones(R, 1) 
+		sm = space_l(psi)
+		psi.s[1] = [1/sqrt(sm) for i in 1:sm]
 	end
 	if !isassigned(raw_singular_matrices(psi), L+1)
-		psi.s[L+1] = ones(R, 1) 
+		sm = space_r(psi)
+		psi.s[L+1] = [1/sqrt(sm) for i in 1:sm]
 	end
 end
 

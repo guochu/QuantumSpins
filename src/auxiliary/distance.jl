@@ -10,3 +10,7 @@ function _distance2(x, y)
 end
 
 _distance(x, y) = sqrt(_distance2(x, y))
+
+
+distance2(x::AbstractArray{<:Number, N}, y::AbstractArray{<:Number, N}) where N = _distance2(x, y)
+distance(x::AbstractArray{<:Number, N}, y::AbstractArray{<:Number, N}) where N = _distance(x, y)

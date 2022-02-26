@@ -324,6 +324,23 @@ function _leftnull_svd!(A::StridedMatrix{<:BlasFloat}, atol::Real)
     return U[:, indstart:end]
 end
 
+function entropy(v::AbstractVector{<:Real}) 
+    a = v.*v
+    s = sum(a)
+    a ./= s
+    return -dot(a, log.(a))
+end
+
+function renyi_entropy(v::AbstractVector{<:Real}, n::Int) 
+    if n==1
+        return entropy(v)
+    else
+        v ./= norm(v)
+        a = v.^(2*n)
+        return (1/(1-n)) * log(sum(a))
+    end
+end
+
 # # m must be a square matrix
 # function apply_physical!(m::StridedMatrix{T}, v::StridedArray{T, 3}, workspace::AbstractVector{T}) where T
 #     L = size(m, 1) * size(v, 1)

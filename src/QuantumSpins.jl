@@ -7,7 +7,7 @@ import LinearAlgebra
 
 # auxiliary
 export contract, Coefficient, value, scalar_type, is_constant, NoTruncation, TruncateCutoff, TruncateDim, MPSTruncation, TruncationScheme
-export permute, tie, deparallelise, tsvd!, texp, tqr!, tlq!
+export permute, tie, deparallelise, tsvd!, texp, tqr!, tlq!, entropy, renyi_entropy
 export dot, norm, tr, normalize!, normalize
 
 # mps

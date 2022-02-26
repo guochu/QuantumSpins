@@ -155,14 +155,15 @@ function check_unitary_timeevo()
 	
 
 	# TDVP
-	state = increase_bond!(prodmps(ComplexF64, [2 for i in 1:L], init_state), D=20)
+	# state = increase_bond!(prodmps(ComplexF64, [2 for i in 1:L], init_state), D=20)
+	state = prodmps(ComplexF64, [2 for i in 1:L], init_state)
 	canonicalize!(state)
 
 	obs2 = Vector{Float64}[]
-	cache = timeevo_cache(ham, TDVPStepper(stepsize=stepsize, tspan=(0, -im*delta), ishermitian=true), state)
+	cache = timeevo_cache(ham, TDVPStepper(D=20, stepsize=stepsize, tspan=(0, -im*delta), ishermitian=true), state)
 	push!(obs2, [real(expectation(item, state, iscanonical=true)) for item in observers])
 	for i in 1:10
-		stepper = TDVPStepper(stepsize=stepsize, tspan=(-im*(i-1)*delta, -im*i*delta), ishermitian=true)
+		stepper = TDVPStepper(D=20, stepsize=stepsize, tspan=(-im*(i-1)*delta, -im*i*delta), ishermitian=true)
 		state, cache = timeevo!(state, ham, stepper, cache)
 		push!(obs2, [real(expectation(item, state, iscanonical=false)) for item in observers])
 	end
@@ -291,9 +292,10 @@ function check_twotime_corr()
 
 	function compare_open_nsym_corr(reverse::Bool)
 		h, sp_op, sm_op = build_open_models_AB(h1s, h2s, p)
-		rho = increase_bond!(DensityOperator(state), D=20)
-		canonicalize!(rho)
-		corr = correlation_2op_1t(h, sp_op, sm_op, rho, ts, stepper=TDVPStepper(stepsize=stepsize), reverse=reverse)
+		# rho = increase_bond!(DensityOperator(state), D=20)
+		# canonicalize!(rho)
+		rho = DensityOperator(state)
+		corr = correlation_2op_1t(h, sp_op, sm_op, rho, ts, stepper=TDVPStepper(D=20, stepsize=stepsize), reverse=reverse)
 		return corr
 	end
 
