@@ -86,6 +86,7 @@ include("envs/overlap.jl")
 include("circuit/abstractdefs.jl")
 include("circuit/gate.jl")
 include("circuit/circuit.jl")
+include("circuit/apply_gates_no_to.jl")
 include("circuit/apply_gates.jl")
 include("circuit/gate_fusion.jl")
 

@@ -1,23 +1,25 @@
 
 
-function _swap_gate(svectorj1, mpsj1, svectorj2, mpsj2, trunc::TruncationScheme)
-	@tensor twositemps[-1 -3; -2 -4] := mpsj1[-1, -2, 1] * mpsj2[1, -3, -4]
-	# @tensor twositemps1[-1 -2; -3 -4] := svectorj1[-1, 1] * twositemps[1, -2, -3, -4]
-	twositemps1 = reshape(Diagonal(svectorj1) * tie(twositemps, (1, 3)), size(twositemps))
-	u, s, v, err = tsvd!(twositemps1, (1,2), (3,4), trunc=trunc)
-	@tensor u[-1 -2; -3] = twositemps[-1,-2,1,2] * conj(v[-3,1,2])
-	return u, s, v, err
-end
+# # this function will be moved to apply_gates_to_to.jl, without using the package TensorOperations.
+# function _swap_gate(svectorj1, mpsj1, svectorj2, mpsj2, trunc::TruncationScheme)
+# 	@tensor twositemps[-1 -3; -2 -4] := mpsj1[-1, -2, 1] * mpsj2[1, -3, -4]
+# 	# @tensor twositemps1[-1 -2; -3 -4] := svectorj1[-1, 1] * twositemps[1, -2, -3, -4]
+# 	twositemps1 = reshape(Diagonal(svectorj1) * tie(twositemps, (1, 3)), size(twositemps))
+# 	u, s, v, err = tsvd!(twositemps1, (1,2), (3,4), trunc=trunc)
+# 	@tensor u[-1 -2; -3] = twositemps[-1,-2,1,2] * conj(v[-3,1,2])
+# 	return u, s, v, err
+# end
 
-function bond_evolution(bondmpo, svectorj1, mpsj1, svectorj2, mpsj2, trunc::TruncationScheme)
-	@tensor twositemps[-1 -2; -3 -4] :=  mpsj1[-1, 1, 3] * mpsj2[3, 2, -4] * bondmpo[-2,-3, 1,2]
-	# @tensor twositemps1[-1 -2; -3 -4] := svectorj1[-1, 1] * twositemps[1, -2, -3, -4]
-	twositemps1 = reshape(Diagonal(svectorj1) * tie(twositemps, (1, 3)), size(twositemps))
-	# to remove very small numbers
-	u, s, v, err = tsvd!(twositemps1, (1,2), (3,4), trunc=trunc)
-	@tensor u[-1 -2; -3] = twositemps[-1,-2,1,2] * conj(v[-3,1,2])
-	return u, s, v, err	
-end
+# # this function will be moved to apply_gates_to_to.jl, without using the package TensorOperations.
+# function bond_evolution(bondmpo, svectorj1, mpsj1, svectorj2, mpsj2, trunc::TruncationScheme)
+# 	@tensor twositemps[-1 -2; -3 -4] :=  mpsj1[-1, 1, 3] * mpsj2[3, 2, -4] * bondmpo[-2,-3, 1,2]
+# 	# @tensor twositemps1[-1 -2; -3 -4] := svectorj1[-1, 1] * twositemps[1, -2, -3, -4]
+# 	twositemps1 = reshape(Diagonal(svectorj1) * tie(twositemps, (1, 3)), size(twositemps))
+# 	# to remove very small numbers
+# 	u, s, v, err = tsvd!(twositemps1, (1,2), (3,4), trunc=trunc)
+# 	@tensor u[-1 -2; -3] = twositemps[-1,-2,1,2] * conj(v[-3,1,2])
+# 	return u, s, v, err	
+# end
 
 
 function bond_evolution3(bondmpo, svectorj1, mpsj1, svectorj2, mpsj2, svectorj3, mpsj3, trunc::TruncationScheme)
