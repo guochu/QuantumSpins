@@ -31,7 +31,7 @@ end
 
 
 apply_4_34_4_23!(m::StridedArray{T, 4}, vi::StridedArray{T, 4}, vo::StridedArray{T, 4}) where T = apply_2_2_3_2!(tie(m, (2,2)), tie(vi, (1,2,1)), tie(vo, (1,2,1)))
-
+apply_4_34_4_23!(m::StridedArray{<:Number, 4}, vi::StridedArray{T, 4}, vo::StridedArray{T, 4}) where T = apply_4_34_4_23!(convert(Array{T, 4}, m), vi, vo)
 
 function bond_evolution(bondmpo, svectorj1, mpsj1, svectorj2, mpsj2, trunc::TruncationScheme)
 	# @tensor twositemps[-1 -2; -3 -4] :=  mpsj1[-1, 1, 3] * mpsj2[3, 2, -4] * bondmpo[-2,-3, 1,2]
