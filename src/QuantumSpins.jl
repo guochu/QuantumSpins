@@ -40,7 +40,7 @@ export from_external, Gate, QMeasure, measure!, amplitude, statevector_mps
 export QFT
 
 # utilities
-export spin_half_matrices, heisenberg_chain, boundary_driven_xxz
+export spin_half_matrices, ising_chain, heisenberg_chain, boundary_driven_xxz
 
 module Defaults
 	const maxiter = 100

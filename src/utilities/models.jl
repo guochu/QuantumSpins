@@ -22,6 +22,20 @@ function heisenberg_chain(L::Int; J::Real, Jzz::Real, hz::Real)
 end
 
 
+function ising_chain(L::Int; J::Real, hz::Real)
+	p = spin_half_matrices()
+    x, z = p["x"], p["z"]	
+    terms = []
+    for i in 1:L
+    	push!(terms, QTerm(i=>z, coeff=hz))
+    end
+    for i in 1:L-1
+    	push!(terms, QTerm(i=>x, i+1=>x, coeff=hz))
+    end
+    return QuantumOperator([terms...])
+end
+
+
 function boundary_driven_xxz(L::Int; J::Real, Jzz::Real, hz::Real, nl::Real, Λl::Real, nr::Real, Λr::Real, Λp::Real)
 	p = spin_half_matrices()
 	(nl >=0 && nl <=1) || error("nl must be between 0 and 1.")
