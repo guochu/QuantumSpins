@@ -30,7 +30,7 @@ function ising_chain(L::Int; J::Real, hz::Real)
     	push!(terms, QTerm(i=>z, coeff=hz))
     end
     for i in 1:L-1
-    	push!(terms, QTerm(i=>x, i+1=>x, coeff=hz))
+    	push!(terms, QTerm(i=>x, i+1=>x, coeff=J))
     end
     return QuantumOperator([terms...])
 end
