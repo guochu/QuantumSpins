@@ -45,7 +45,10 @@ function bond_evolution(bondmpo, svectorj1, mpsj1, svectorj2, mpsj2, trunc::Trun
 	# we can save a copy of twositemps1 by reuse the previous memory of twositemps1 here.
 	twositemps1 = reshape(Diagonal(svectorj1) * tie(twositemps, (1, 3)), size(twositemps))
 	# to remove very small numbers
-	u, s, v, err = tsvd!(twositemps1, (1,2), (3,4), trunc=trunc)
+	# u, s, v, err = tsvd!(twositemps1, (1,2), (3,4), trunc=trunc)
+	u, s, v, err = tsvd!(tie(twositemps1,2,2), trunc=trunc)
+	u = reshape(u, size(twositemps1, 1), size(twositemps1, 2), length(s))
+	v = reshape(v, length(s), size(twositemps1, 3), size(twositemps1, 4))
 
 	# @tensor u[-1 -2; -3] = twositemps[-1,-2,1,2] * conj(v[-3,1,2])
 	size_m = length(s)
