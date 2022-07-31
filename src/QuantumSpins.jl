@@ -19,7 +19,7 @@ export AbstractMPO, MPO, prodmpo, randommpo, id, expectation, svdcompress!
 export MPOCompression, SVDCompression, Deparallelise, compress!
 
 # circuit
-export QuantumGate, QuantumCircuit, QCircuit, apply!, positions, shift, fuse_gates
+export QuantumGate, QuantumCircuit, apply!, positions, shift, fuse_gates
 
 # operators, easier interface for building quantum operators incrementally, and used for TEBD. Should it really be here in this package?
 export QTerm, QuantumOperator, matrix, add!, qterms, superoperator, add_unitary!, add_dissipation!
@@ -30,14 +30,14 @@ export trotter_propagator, environments, DMRG, TDVP, sweep!, ground_state!
 export timeevo!, AbstractStepper, TEBDStepper, TDVPStepper, change_tspan_dt, TEBDCache, TDVPCache, timeevo_cache, correlation_2op_1t, exact_correlation_2op_1t
 export mixed_thermalize, thermal_state, itimeevo!
 
-# quantum circuit simulator
-export ZERO, ONE, X, Y, Z, S, H, sqrtX, sqrtY, T, Rx, Ry, Rz, CONTROL, CZ, CNOT, CX, SWAP, iSWAP
-export CONTROLCONTROL, TOFFOLI, CCX, UP, DOWN, FSIM, GFSIM, PHASE
-export XGate, YGate, ZGate, SGate, SqrtXGate, SqrtYGate, HGate, TGate, RxGate, RyGate, RzGate, CZGate, PHASEGate
-export CNOTGate, SWAPGate, iSWAPGate, CRxGate, CRyGate, CRzGate, TOFFOLIGate, FREDKINGate
-export CONTROLGate, CPHASEGate, CCPHASEGate, CONTROLCONTROLGate, FSIMGate, GFSIMGate
-export from_external, Gate, QMeasure, measure!, amplitude, statevector_mps
-export QFT
+# # quantum circuit simulator
+# export ZERO, ONE, X, Y, Z, S, H, sqrtX, sqrtY, T, Rx, Ry, Rz, CONTROL, CZ, CNOT, CX, SWAP, iSWAP
+# export CONTROLCONTROL, TOFFOLI, CCX, UP, DOWN, FSIM, GFSIM, PHASE
+# export XGate, YGate, ZGate, SGate, SqrtXGate, SqrtYGate, HGate, TGate, RxGate, RyGate, RzGate, CZGate, PHASEGate
+# export CNOTGate, SWAPGate, iSWAPGate, CRxGate, CRyGate, CRzGate, TOFFOLIGate, FREDKINGate
+# export CONTROLGate, CPHASEGate, CCPHASEGate, CONTROLCONTROLGate, FSIMGate, GFSIMGate
+# export from_external, Gate, QMeasure, measure!, amplitude, statevector_mps
+# export QFT
 
 # utilities
 export spin_half_matrices, ising_chain, heisenberg_chain, boundary_driven_xxz
@@ -108,10 +108,10 @@ include("algorithms/timeevo.jl")
 include("algorithms/thermalstate.jl")
 include("algorithms/twotimecorr.jl")
 
-# quantum circuit simulator
-include("quantumcircuitsimulator/interface/interface.jl")
-include("quantumcircuitsimulator/backends/mps.jl")
-include("quantumcircuitsimulator/algorithm/qft.jl")
+# # quantum circuit simulator
+# include("quantumcircuitsimulator/interface/interface.jl")
+# include("quantumcircuitsimulator/backends/mps.jl")
+# include("quantumcircuitsimulator/algorithm/qft.jl")
 
 # utilities
 include("utilities/spin_siteops.jl")
