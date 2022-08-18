@@ -4,9 +4,8 @@
 
 function leftorth!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(); trunc::TruncationScheme = NoTruncation())
 	L = length(psi)
-	(L > 1) || error("number of input mps tensors must be larger than 1.")
-	errs = Float64[]
 	maybe_init_boundary_s!(psi)
+	errs = Float64[]
 	for i in 1:L-1
 		# u, s, v, err = stable_tsvd(psi[i], (1, 2), (3,), trunc=trunc)
 		u, s, v, err = tsvd!(tie(psi[i], (2, 1)), workspace, trunc=trunc)
@@ -22,9 +21,8 @@ end
 
 function rightorth!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(); trunc::TruncationScheme = NoTruncation())
 	L = length(psi)
-	(L > 1) || error("number of input mps tensors must be larger than 1.")
-	errs = Float64[]
 	maybe_init_boundary_s!(psi)
+	errs = Float64[]
 	for i in L:-1:2
 		# u, s, v, err = stable_tsvd(psi[i], (1,), (2, 3), trunc=trunc)
 		u, s, v, err = tsvd!(tie(psi[i], (1, 2)), workspace, trunc=trunc)
