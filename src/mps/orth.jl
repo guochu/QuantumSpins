@@ -1,6 +1,13 @@
 # orthogonalize mps to be left-canonical or right-canonical
 
-
+function leftorth_qr!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}())
+	L = length(psi)
+	for i in 1:L-1
+		q, r = tqr!(psi[i], (1, 2), (3,))
+		psi[i] = q
+		psi[i+1] = reshape(r * tie(psi[i+1], (1, 2)), size(r, 1), size(psi[i+1], 2), size(psi[i+1], 3))
+	end
+end
 
 function leftorth!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(); trunc::TruncationScheme = NoTruncation())
 	L = length(psi)
@@ -38,13 +45,12 @@ end
 
 
 function right_canonicalize!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(); normalize::Bool=false, trunc::TruncationScheme = NoTruncation())
-	err1 = leftorth!(psi, workspace, trunc=trunc)
+	leftorth_qr!(psi, workspace)
 	if normalize
 		psi[end] /= norm(psi[end])
 	end
-	err2 = rightorth!(psi, workspace, trunc=trunc)
-	append!(err1, err2)
-	return err1
+	errs = rightorth!(psi, workspace, trunc=trunc)
+	return errs
 end
 
 canonicalize!(psi::MPS, args...; kwargs...) = right_canonicalize!(psi, args...; kwargs...)
