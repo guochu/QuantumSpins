@@ -3,7 +3,7 @@
 function leftorth_qr!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}())
 	L = length(psi)
 	for i in 1:L-1
-		q, r = tqr!(psi[i], (1, 2), (3,))
+		q, r = tqr!(psi[i], (1, 2), (3,), workspace)
 		psi[i] = q
 		psi[i+1] = reshape(r * tie(psi[i+1], (1, 2)), size(r, 1), size(psi[i+1], 2), size(psi[i+1], 3))
 	end
@@ -43,11 +43,19 @@ function rightorth!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}
 	return errs
 end
 
+function rightorth_qr!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(); trunc::TruncationScheme = NoTruncation())
+	L = length(psi)
+	for i in L:-1:2
+		l, q = tlq!(psi[i], (1,), (2, 3), workspace)
+		psi[i] = q
+		psi[i-1] = reshape(tie(psi[i-1], (2, 1)) * l, size(psi[i-1], 1), size(psi[i-1], 2), size(l, 2))
+	end
+end
 
 function right_canonicalize!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(); normalize::Bool=false, trunc::TruncationScheme = NoTruncation())
 	leftorth_qr!(psi, workspace)
 	if normalize
-		psi[end] /= norm(psi[end])
+		psi[end] ./= norm(psi[end])
 	end
 	errs = rightorth!(psi, workspace, trunc=trunc)
 	return errs
