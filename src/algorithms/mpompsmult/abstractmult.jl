@@ -1,0 +1,2 @@
+abstract type AbstractMPOMPSMult end
+abstract type AbstractMPOMPSMultCache end

@@ -1,7 +1,7 @@
 module QuantumSpins
 
 using Logging: @warn
-using SparseArrays, Parameters, KrylovKit, TensorOperations
+using SparseArrays, Parameters, KrylovKit, TensorOperations, Statistics
 using LinearAlgebra: Diagonal, dot, norm, tr, mul!, normalize!, normalize
 import LinearAlgebra
 
@@ -29,6 +29,9 @@ export trotter_propagator, environments, DMRG, TDVP, sweep!, ground_state!
 # time evolve stepper
 export timeevo!, AbstractStepper, TEBDStepper, TDVPStepper, change_tspan_dt, TEBDCache, TDVPCache, timeevo_cache, correlation_2op_1t, exact_correlation_2op_1t
 export mixed_thermalize, thermal_state, itimeevo!
+
+export AbstractMPOMPSMult, IterativeMult, StableMult, SVDMult, iterative_mult, svd_mult, stable_mult, mpompsmult
+export AbstractMPSAdd, iterative_add, svd_add, IterativeAdd, SVDAdd, mpsadd
 
 # # quantum circuit simulator
 # export ZERO, ONE, X, Y, Z, S, H, sqrtX, sqrtY, T, Rx, Ry, Rz, CONTROL, CZ, CNOT, CX, SWAP, iSWAP
@@ -107,6 +110,9 @@ include("algorithms/tdvp.jl")
 include("algorithms/timeevo.jl")
 include("algorithms/thermalstate.jl")
 include("algorithms/twotimecorr.jl")
+# iterative mpo mps algorithms
+include("algorithms/mpompsmult/mpompsmult.jl")
+include("algorithms/mpsadd/mpsadd.jl")
 
 # # quantum circuit simulator
 # include("quantumcircuitsimulator/interface/interface.jl")

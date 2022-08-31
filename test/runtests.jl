@@ -102,6 +102,88 @@ end
 
 println("-----------test mps algorithms-----------------")
 
+
+function create_random_mpo_mps(::Type{T}, L, d, D1, D2) where T
+    mpo = randommpo(T, L, d=d, D=D1)
+    mps = randommps(T, L, d=d, D=D2)
+    for i in 1:L
+    	mpo[i] /= D1
+    end
+    for i in 1:L
+    	mps[i] /= D2
+    end    
+    return mpo, mps
+end
+
+function test_iterative_mult(::Type{T}, L::Int) where T
+	d = 2
+	mpo, mps = create_random_mpo_mps(T, L, d, 2, 3)
+
+	mps_exact = mpo * mps
+	mps_iterative, err = iterative_mult(mpo, mps, IterativeMult(single_site=true, D=6, verbosity=0))
+
+	return QuantumSpins.distance(mps_exact, mps_iterative) <= 1.0e-6
+end
+
+function test_svd_mult(::Type{T}, L::Int) where T
+	d = 2
+	mpo, mps = create_random_mpo_mps(T, L, d, 2, 3)
+
+	mps_exact = mpo * mps
+	mps_iterative, err = svd_mult(mpo, mps, SVDMult(verbosity=0))
+
+	return QuantumSpins.distance(mps_exact, mps_iterative) <= 1.0e-6
+end
+
+function test_stable_mult(::Type{T}, L::Int) where T
+	d = 2
+	mpo, mps = create_random_mpo_mps(T, L, d, 2, 3)
+
+	mps_exact = mpo * mps
+	mps_iterative, err = stable_mult(mpo, mps, StableMult(single_site=true, verbosity=0))
+
+	return QuantumSpins.distance(mps_exact, mps_iterative) <= 1.0e-6
+end
+
+function check_mpsadd(::Type{T}, L::Int) where T
+	a = randommps(T, L, d=2, D=2)
+	b = randommps(T, L, d=2, D=3)
+
+	c1 = a + b
+	c2, err = svd_add(a, b, SVDAdd(D=6))
+	c3, err = iterative_add(a, b, IterativeAdd(D=6))
+
+	# println(distance(c1, c2))
+	# println(distance(c1, c3))
+	return max(distance(c1, c2), distance(c1, c3)) < 1.0e-5
+
+end
+
+function check_mpsadd_2(::Type{T}, L::Int) where T
+	a1 = randommps(T, L, d=2, D=2)
+	a2 = randommps(T, L, d=2, D=3)
+	a3 = randommps(T, L, d=2, D=2)
+
+	c1, err = svd_add([a1,a2,a3], SVDAdd(D=12))
+	c2, err = iterative_add([a1,a2,a3], IterativeAdd(D=12))
+
+	return distance(c1, c2) < 1.0e-5
+end
+
+# println("-----------test mpo mps iterative mult-----------------")
+
+@testset "mpo mps iterative mult" begin
+	@test test_iterative_mult(Float64, 7)
+	@test test_iterative_mult(ComplexF64, 6)
+	@test test_svd_mult(Float64, 5)
+	@test test_svd_mult(ComplexF64, 4)
+	@test test_stable_mult(Float64, 3)
+	@test test_stable_mult(ComplexF64, 8)
+	@test check_mpsadd(ComplexF64, 5)
+	@test check_mpsadd_2(Float64, 7)
+end
+
+
 function check_gs()
 	L = 5
 	J = 1.
