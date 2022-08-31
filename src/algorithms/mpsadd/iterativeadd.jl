@@ -87,12 +87,17 @@ function _rightsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeAdd, workspa
 
     kvals = Float64[]
     l = zeros(scalar_type(mpsy), 0, 0)
+    maybe_init_boundary_s!(mpsy)
     for site in L:-1:2
         (alg.verbosity > 2) && println("Sweeping from right to left at bond: $site.")
         mpsj = _compute_one_site_mpsj(mpsxs, cstorages, site)
         push!(kvals, norm(mpsj))
         (alg.verbosity > 2) && println("residual is $(kvals[end])...")
-        l, mpsy[site] = tlq!(mpsj, (1,), (2,3), workspace)
+        # l, mpsy[site] = tlq!(mpsj, (1,), (2,3), workspace)
+        u, s, v, err = tsvd!(mpsj, (1,), (2,3), workspace, trunc=NoTruncation())
+        mpsy[site] = v
+        l = u * Diagonal(s)
+        mpsy.s[site] = s
 
         for n in 1:N
             cstorages[n][site] = updateright(cstorages[n][site+1], mpsy[site], mpsxs[n][site])
