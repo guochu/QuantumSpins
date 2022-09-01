@@ -1,6 +1,6 @@
 # orthogonalize mps to be left-canonical or right-canonical
 
-function leftorth_qr!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}())
+function _leftorth_qr!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}())
 	L = length(psi)
 	for i in 1:L-1
 		q, r = tqr!(psi[i], (1, 2), (3,), workspace)
@@ -9,7 +9,7 @@ function leftorth_qr!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi
 	end
 end
 
-function leftorth!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(); trunc::TruncationScheme = NoTruncation())
+function _leftorth_svd!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(), trunc::TruncationScheme = NoTruncation())
 	L = length(psi)
 	maybe_init_boundary_s!(psi)
 	errs = Float64[]
@@ -26,7 +26,11 @@ function leftorth!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(
 	return errs
 end
 
-function rightorth!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(); trunc::TruncationScheme = NoTruncation())
+_leftorth!(psi::MPS, workspace::AbstractVector, alg::QR) = _leftorth_qr!(psi, workspace)
+_leftorth!(psi::MPS, workspace::AbstractVector, alg::SVD) = _leftorth_svd!(psi, workspace, alg.trunc)
+leftorth!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(); alg::AbstractMatrixFactorization=SVD()) = _leftorth!(psi, workspace, alg)
+
+function _rightorth_svd!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(), trunc::TruncationScheme = NoTruncation())
 	L = length(psi)
 	maybe_init_boundary_s!(psi)
 	errs = Float64[]
@@ -43,7 +47,7 @@ function rightorth!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}
 	return errs
 end
 
-function rightorth_qr!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(); trunc::TruncationScheme = NoTruncation())
+function _rightorth_qr!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}())
 	L = length(psi)
 	for i in L:-1:2
 		l, q = tlq!(psi[i], (1,), (2, 3), workspace)
@@ -51,13 +55,16 @@ function rightorth_qr!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(ps
 		psi[i-1] = reshape(tie(psi[i-1], (2, 1)) * l, size(psi[i-1], 1), size(psi[i-1], 2), size(l, 2))
 	end
 end
+_rightorth!(psi::MPS, workspace::AbstractVector, alg::QR) = _rightorth_qr!(psi, workspace)
+_rightorth!(psi::MPS, workspace::AbstractVector, alg::SVD) = _rightorth_svd!(psi, workspace, alg.trunc)
+rightorth!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(); alg::AbstractMatrixFactorization=SVD()) = _rightorth!(psi, workspace, alg)
 
-function right_canonicalize!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(); normalize::Bool=false, trunc::TruncationScheme = NoTruncation())
-	leftorth_qr!(psi, workspace)
+function right_canonicalize!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(); normalize::Bool=false, alg::AbstractMatrixFactorization=SVD())
+	_leftorth_qr!(psi, workspace)
 	if normalize
 		psi[end] ./= norm(psi[end])
 	end
-	errs = rightorth!(psi, workspace, trunc=trunc)
+	errs = rightorth!(psi, workspace, alg=alg)
 	return errs
 end
 

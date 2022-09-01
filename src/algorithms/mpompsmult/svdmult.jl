@@ -1,15 +1,15 @@
 
 
-@with_kw struct SVDMult <: AbstractMPOMPSMult
+@with_kw struct SVDArith <: AbstractMPSArith
 	D::Int = 100
 	ϵ::Float64 = 1.0e-8
 	verbosity::Int = 1
 end
 
-changeD(x::SVDMult; D::Int) = SVDMult(D=D, ϵ=x.ϵ, verbosity=x.verbosity)
+changeD(x::SVDArith; D::Int) = SVDArith(D=D, ϵ=x.ϵ, verbosity=x.verbosity)
 
 
-function svd_mult(mpo::AbstractMPO, mps::AbstractMPS, alg::SVDMult = SVDMult())
+function svd_mult(mpo::AbstractMPO, mps::AbstractMPS, alg::SVDArith = SVDArith())
 	(length(mpo) != length(mps)) && error("dot mps requires mpo and mps of same size.")
 	isempty(mpo) && error("mpo is empty.")
 	L = length(mps)
@@ -38,7 +38,7 @@ function svd_mult(mpo::AbstractMPO, mps::AbstractMPS, alg::SVDMult = SVDMult())
 	tmp3 = tie(tmp, (2,1,2))
 	@tensor tmp3c[1,3,4] := v[1,2] * tmp3[2,3,4]
 	res[L] = tmp3c
-	rightorth!(res, workspace, trunc=trunc)
+	rightorth!(res, workspace, alg=SVD(trunc=trunc))
 	return res, err
 end
 

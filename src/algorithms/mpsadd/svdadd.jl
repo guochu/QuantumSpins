@@ -1,14 +1,8 @@
 
 
-@with_kw struct SVDAdd <: AbstractMPSAdd
-	D::Int = DefaultTruncation.D
-	ϵ::Float64 = DefaultTruncation.ϵ
-	verbosity::Int = Defaults.verbosity
-end
+get_trunc(x::SVDArith) = MPSTruncation(D=x.D, ϵ=x.ϵ)
 
-get_trunc(x::SVDAdd) = MPSTruncation(D=x.D, ϵ=x.ϵ)
-
-function svd_add(psiA::MPS, psiB::MPS, alg::SVDAdd = SVDAdd()) 
+function svd_add(psiA::MPS, psiB::MPS, alg::SVDArith = SVDArith()) 
     (length(psiA) == length(psiB)) || throw(DimensionMismatch())
     (isempty(psiA)) && error("input mps is empty.")
     if length(psiA) == 1
@@ -34,11 +28,11 @@ function svd_add(psiA::MPS, psiB::MPS, alg::SVDAdd = SVDAdd())
     rj = cat(psiA[L], psiB[L], dims=1)
     @tensor tmp[1,3,4] := v[1,2] * rj[2,3,4]
     r[L] = tmp
-    rightorth!(r, workspace, trunc=trunc)
+    rightorth!(r, workspace, alg=SVD(trunc=trunc))
     return r, err
 end
 
-function svd_add(psis::Vector{<:MPS}, alg::SVDAdd = SVDAdd())
+function svd_add(psis::Vector{<:MPS}, alg::SVDArith = SVDArith())
 	isempty(psis) && error("no states.")
 	(length(psis)==1) && return psis[1]
 	r, err = svd_add(psis[1], psis[2], alg)

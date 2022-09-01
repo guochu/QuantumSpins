@@ -120,7 +120,7 @@ function test_iterative_mult(::Type{T}, L::Int) where T
 	mpo, mps = create_random_mpo_mps(T, L, d, 2, 3)
 
 	mps_exact = mpo * mps
-	mps_iterative, err = iterative_mult(mpo, mps, IterativeMult(single_site=true, D=6, verbosity=0))
+	mps_iterative, err = iterative_mult(mpo, mps, IterativeArith(D=6, verbosity=0))
 
 	return QuantumSpins.distance(mps_exact, mps_iterative) <= 1.0e-6
 end
@@ -130,7 +130,7 @@ function test_svd_mult(::Type{T}, L::Int) where T
 	mpo, mps = create_random_mpo_mps(T, L, d, 2, 3)
 
 	mps_exact = mpo * mps
-	mps_iterative, err = svd_mult(mpo, mps, SVDMult(verbosity=0))
+	mps_iterative, err = svd_mult(mpo, mps, SVDArith(verbosity=0))
 
 	return QuantumSpins.distance(mps_exact, mps_iterative) <= 1.0e-6
 end
@@ -140,7 +140,7 @@ function test_stable_mult(::Type{T}, L::Int) where T
 	mpo, mps = create_random_mpo_mps(T, L, d, 2, 3)
 
 	mps_exact = mpo * mps
-	mps_iterative, err = stable_mult(mpo, mps, StableMult(single_site=true, verbosity=0))
+	mps_iterative, err = stable_mult(mpo, mps, StableArith(verbosity=0))
 
 	return QuantumSpins.distance(mps_exact, mps_iterative) <= 1.0e-6
 end
@@ -150,8 +150,8 @@ function check_mpsadd(::Type{T}, L::Int) where T
 	b = randommps(T, L, d=2, D=3)
 
 	c1 = a + b
-	c2, err = svd_add(a, b, SVDAdd(D=6))
-	c3, err = iterative_add(a, b, IterativeAdd(D=6))
+	c2, err = svd_add(a, b, SVDArith(D=6))
+	c3, err = iterative_add(a, b, IterativeArith(D=6))
 
 	# println(distance(c1, c2))
 	# println(distance(c1, c3))
@@ -164,8 +164,8 @@ function check_mpsadd_2(::Type{T}, L::Int) where T
 	a2 = randommps(T, L, d=2, D=3)
 	a3 = randommps(T, L, d=2, D=2)
 
-	c1, err = svd_add([a1,a2,a3], SVDAdd(D=12))
-	c2, err = iterative_add([a1,a2,a3], IterativeAdd(D=12))
+	c1, err = svd_add([a1,a2,a3], SVDArith(D=12))
+	c2, err = iterative_add([a1,a2,a3], IterativeArith(D=12))
 
 	return distance(c1, c2) < 1.0e-5
 end

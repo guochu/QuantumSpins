@@ -1,14 +1,4 @@
 
-
-@with_kw struct OneSiteIterativeAdd <: AbstractMPSAdd
-	D::Int = 100
-	maxiter::Int = 5
-	verbosity::Int = 1
-	tol::Float64 = 1.0e-8
-end
-
-IterativeAdd(;kwargs...) = OneSiteIterativeAdd(;kwargs...)
-
 struct MPSIterativeAddCache{_MPSA, _MPSB, _H} <: AbstractMPSAddCache
     omps::_MPSA
     imps::Vector{_MPSB}
@@ -20,8 +10,8 @@ MPSIterativeAddCache(omps::MPS, imps::Vector{<:MPS}) = MPSIterativeAddCache(omps
 scalar_type(x::MPSIterativeAddCache) = scalar_type(x.omps)
 
 
-iterative_add(a::MPS, b::MPS, alg::OneSiteIterativeAdd=OneSiteIterativeAdd()) = iterative_add([a, b], alg)
-function iterative_add(mpsxs::Vector{MPS{T, R}}, alg::OneSiteIterativeAdd=OneSiteIterativeAdd()) where {T, R}
+iterative_add(a::MPS, b::MPS, alg::OneSiteIterativeArith=OneSiteIterativeArith()) = iterative_add([a, b], alg)
+function iterative_add(mpsxs::Vector{MPS{T, R}}, alg::OneSiteIterativeArith=OneSiteIterativeArith()) where {T, R}
     isempty(mpsxs) && error("no input state.")
     (length(mpsxs) == 1) && return mpsxs[1]
     ds = physical_dimensions(mpsxs[1])
@@ -29,17 +19,17 @@ function iterative_add(mpsxs::Vector{MPS{T, R}}, alg::OneSiteIterativeAdd=OneSit
     	@assert ds == physical_dimensions(mpsxs[i])
     end
     mpsout = randommps(T, physical_dimensions(mpsxs[1]), D=alg.D)
-    rightorth_qr!(mpsout)
+    rightorth!(mpsout, alg=QR())
 
     m = MPSIterativeAddCache(mpsout, mpsxs)
     kvals = compute!(m, alg)
     return m.omps, kvals[end]
 end
 
-sweep!(m::MPSIterativeAddCache, alg::OneSiteIterativeAdd, workspace = scalar_type(m)[]) = iterative_error_2(
+sweep!(m::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[]) = iterative_error_2(
     vcat(_leftsweep!(m, alg, workspace), _rightsweep!(m, alg, workspace)))
 
-function compute!(m::MPSIterativeAddCache, alg::OneSiteIterativeAdd, workspace = scalar_type(m)[])
+function compute!(m::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[])
 	kvals = Float64[]
 	iter = 0
 	tol = 1.
@@ -58,7 +48,7 @@ function compute!(m::MPSIterativeAddCache, alg::OneSiteIterativeAdd, workspace =
 	return kvals
 end
 
-function _leftsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeAdd, workspace = scalar_type(m)[])
+function _leftsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[])
 	mpsxs = x.imps
 	mpsy = x.omps
 	cstorages = x.hstorage
@@ -78,7 +68,7 @@ function _leftsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeAdd, workspac
     return kvals
 end
 
-function _rightsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeAdd, workspace = scalar_type(m)[])
+function _rightsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[])
 	mpsxs = x.imps
 	mpsy = x.omps
 	cstorages = x.hstorage
@@ -87,17 +77,24 @@ function _rightsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeAdd, workspa
 
     kvals = Float64[]
     l = zeros(scalar_type(mpsy), 0, 0)
-    maybe_init_boundary_s!(mpsy)
+    isa(alg.fact, SVD) && maybe_init_boundary_s!(mpsy)
     for site in L:-1:2
         (alg.verbosity > 2) && println("Sweeping from right to left at bond: $site.")
         mpsj = _compute_one_site_mpsj(mpsxs, cstorages, site)
         push!(kvals, norm(mpsj))
         (alg.verbosity > 2) && println("residual is $(kvals[end])...")
         # l, mpsy[site] = tlq!(mpsj, (1,), (2,3), workspace)
-        u, s, v, err = tsvd!(mpsj, (1,), (2,3), workspace, trunc=NoTruncation())
-        mpsy[site] = v
-        l = u * Diagonal(s)
-        mpsy.s[site] = s
+
+        if isa(alg.fact, QR)
+            l, mpsy[site] = tlq!(mpsj, (1,), (2,3), workspace)
+        elseif isa(alg.fact, SVD)
+            u, s, v, err = tsvd!(mpsj, (1,), (2,3), workspace, trunc=alg.fact.trunc)
+            mpsy[site] = v
+            l = u * Diagonal(s)
+            mpsy.s[site] = s
+        else
+            error("unsupported factorization method $(typeof(alg.fact))")
+        end
 
         for n in 1:N
             cstorages[n][site] = updateright(cstorages[n][site+1], mpsy[site], mpsxs[n][site])

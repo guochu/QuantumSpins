@@ -1,2 +1,1 @@
-abstract type AbstractMPSAdd end
 abstract type AbstractMPSAddCache end

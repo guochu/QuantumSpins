@@ -9,9 +9,10 @@ import LinearAlgebra
 export contract, Coefficient, value, scalar_type, is_constant, NoTruncation, TruncateCutoff, TruncateDim, MPSTruncation, TruncationScheme
 export permute, tie, deparallelise, tsvd!, texp, tqr!, tlq!, entropy, renyi_entropy
 export dot, norm, tr, normalize!, normalize
+export AbstractMatrixFactorization, QR, SVD
 
 # mps
-export AbstractMPS, MPS, iscanonical, canonicalize!, bond_dimension, bond_dimensions, distance2, distance, increase_bond!
+export AbstractMPS, MPS, leftorth!, rightorth!, iscanonical, canonicalize!, bond_dimension, bond_dimensions, distance2, distance, increase_bond!
 export physical_dimensions, DensityOperatorMPS, DensityOperator, infinite_temperature_state, prodmps, randommps
 
 # mpo
@@ -30,8 +31,8 @@ export trotter_propagator, environments, DMRG, TDVP, sweep!, ground_state!
 export timeevo!, AbstractStepper, TEBDStepper, TDVPStepper, change_tspan_dt, TEBDCache, TDVPCache, timeevo_cache, correlation_2op_1t, exact_correlation_2op_1t
 export mixed_thermalize, thermal_state, itimeevo!
 
-export AbstractMPOMPSMult, IterativeMult, StableMult, SVDMult, iterative_mult, svd_mult, stable_mult, mpompsmult
-export AbstractMPSAdd, iterative_add, svd_add, IterativeAdd, SVDAdd, mpsadd
+export AbstractMPSArith, IterativeArith, StableArith, SVDArith, iterative_mult, svd_mult, stable_mult, mpompsmult
+export iterative_add, svd_add, mpsadd
 
 # # quantum circuit simulator
 # export ZERO, ONE, X, Y, Z, S, H, sqrtX, sqrtY, T, Rx, Ry, Rz, CONTROL, CZ, CNOT, CX, SWAP, iSWAP
@@ -61,6 +62,7 @@ include("auxiliary/distance.jl")
 include("auxiliary/truncation.jl")
 include("auxiliary/deparallelise.jl")
 include("auxiliary/tensorops.jl")
+include("auxiliary/factorize.jl")
 
 # mps
 include("mps/abstractdefs.jl")
