@@ -28,7 +28,7 @@ function svd_add(psiA::MPS, psiB::MPS, alg::SVDArith = SVDArith())
     rj = cat(psiA[L], psiB[L], dims=1)
     @tensor tmp[1,3,4] := v[1,2] * rj[2,3,4]
     r[L] = tmp
-    rightorth!(r, workspace, alg=SVD(trunc=trunc))
+    rightorth!(r, workspace, alg=SVDFact(trunc=trunc))
     return r, err
 end
 

@@ -26,9 +26,9 @@ function _leftorth_svd!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(p
 	return errs
 end
 
-_leftorth!(psi::MPS, workspace::AbstractVector, alg::QR) = _leftorth_qr!(psi, workspace)
-_leftorth!(psi::MPS, workspace::AbstractVector, alg::SVD) = _leftorth_svd!(psi, workspace, alg.trunc)
-leftorth!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(); alg::AbstractMatrixFactorization=SVD()) = _leftorth!(psi, workspace, alg)
+_leftorth!(psi::MPS, workspace::AbstractVector, alg::QRFact) = _leftorth_qr!(psi, workspace)
+_leftorth!(psi::MPS, workspace::AbstractVector, alg::SVDFact) = _leftorth_svd!(psi, workspace, alg.trunc)
+leftorth!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(); alg::AbstractMatrixFactorization=SVDFact()) = _leftorth!(psi, workspace, alg)
 
 function _rightorth_svd!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(), trunc::TruncationScheme = NoTruncation())
 	L = length(psi)
@@ -55,11 +55,11 @@ function _rightorth_qr!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(p
 		psi[i-1] = reshape(tie(psi[i-1], (2, 1)) * l, size(psi[i-1], 1), size(psi[i-1], 2), size(l, 2))
 	end
 end
-_rightorth!(psi::MPS, workspace::AbstractVector, alg::QR) = _rightorth_qr!(psi, workspace)
-_rightorth!(psi::MPS, workspace::AbstractVector, alg::SVD) = _rightorth_svd!(psi, workspace, alg.trunc)
-rightorth!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(); alg::AbstractMatrixFactorization=SVD()) = _rightorth!(psi, workspace, alg)
+_rightorth!(psi::MPS, workspace::AbstractVector, alg::QRFact) = _rightorth_qr!(psi, workspace)
+_rightorth!(psi::MPS, workspace::AbstractVector, alg::SVDFact) = _rightorth_svd!(psi, workspace, alg.trunc)
+rightorth!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(); alg::AbstractMatrixFactorization=SVDFact()) = _rightorth!(psi, workspace, alg)
 
-function right_canonicalize!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(); normalize::Bool=false, alg::AbstractMatrixFactorization=SVD())
+function right_canonicalize!(psi::MPS, workspace::AbstractVector=Vector{scalar_type(psi)}(); normalize::Bool=false, alg::AbstractMatrixFactorization=SVDFact())
 	_leftorth_qr!(psi, workspace)
 	if normalize
 		psi[end] ./= norm(psi[end])

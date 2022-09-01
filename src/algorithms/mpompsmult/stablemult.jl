@@ -26,7 +26,7 @@ changeD(x::OneSiteStableArith; D::Int) = OneSiteStableArith(D=D, maxiter=x.maxit
 
 get_svd_alg(x::OneSiteStableArith) = SVDArith(D=x.D, ϵ=x.ϵ, verbosity=x.verbosity)
 get_iterative_alg(x::OneSiteStableArith) = OneSiteIterativeArith(
-	D=x.D, fact=SVD(trunc=MPSTruncation(D=x.D, ϵ=x.ϵ)), maxiter=x.maxiter, tol=x.tol, verbosity=x.verbosity)
+	D=x.D, fact=SVDFact(trunc=MPSTruncation(D=x.D, ϵ=x.ϵ)), maxiter=x.maxiter, tol=x.tol, verbosity=x.verbosity)
 # get_iterative_alg(x::TwoSiteStableMult) = TwoSiteIterativeMult(D=x.D, maxiter=x.maxiter, tol=x.tol, verbosity=x.verbosity)
 
 

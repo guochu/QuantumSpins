@@ -9,7 +9,7 @@ import LinearAlgebra
 export contract, Coefficient, value, scalar_type, is_constant, NoTruncation, TruncateCutoff, TruncateDim, MPSTruncation, TruncationScheme
 export permute, tie, deparallelise, tsvd!, texp, tqr!, tlq!, entropy, renyi_entropy
 export dot, norm, tr, normalize!, normalize
-export AbstractMatrixFactorization, QR, SVD
+export AbstractMatrixFactorization, QRFact, SVDFact
 
 # mps
 export AbstractMPS, MPS, leftorth!, rightorth!, iscanonical, canonicalize!, bond_dimension, bond_dimensions, distance2, distance, increase_bond!

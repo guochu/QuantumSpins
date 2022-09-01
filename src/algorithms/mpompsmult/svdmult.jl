@@ -38,7 +38,7 @@ function svd_mult(mpo::AbstractMPO, mps::AbstractMPS, alg::SVDArith = SVDArith()
 	tmp3 = tie(tmp, (2,1,2))
 	@tensor tmp3c[1,3,4] := v[1,2] * tmp3[2,3,4]
 	res[L] = tmp3c
-	rightorth!(res, workspace, alg=SVD(trunc=trunc))
+	rightorth!(res, workspace, alg=SVDFact(trunc=trunc))
 	return res, err
 end
 

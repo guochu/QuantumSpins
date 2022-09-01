@@ -11,7 +11,7 @@ struct OneSiteIterativeArith{F} <: AbstractMPSArith
 	tol::Float64 
 end
 
-OneSiteIterativeArith(;D::Int=100, maxiter::Int=5, fact::AbstractMatrixFactorization=SVD(), verbosity::Int=1, tol::Real=1.0e-8) = OneSiteIterativeArith(
+OneSiteIterativeArith(;D::Int=100, maxiter::Int=5, fact::AbstractMatrixFactorization=SVDFact(), verbosity::Int=1, tol::Real=1.0e-8) = OneSiteIterativeArith(
     D, maxiter, fact, verbosity, tol)
 IterativeArith(;kwargs...) = OneSiteIterativeArith(; kwargs...) 
 
@@ -64,7 +64,7 @@ end
 function iterative_mult(mpo::MPO, mps::MPS, alg::OneSiteIterativeArith = OneSiteIterativeArith())
 	mpsout = randommps(promote_type(scalar_type(mpo), scalar_type(mps)), physical_dimensions(mpo), D=alg.D)
 	# canonicalize!(mpsout, normalize=true)
-    rightorth!(mpsout, alg=QR())
+    rightorth!(mpsout, alg=QRFact())
 	m = MPOMPSIterativeMultCache(mpo, mps, mpsout, init_hstorage_right(mpsout, mpo, mps))
 	kvals = compute!(m, alg)
 	return m.omps, kvals[end]
@@ -97,15 +97,15 @@ function _rightsweep!(m::MPOMPSIterativeMultCache, alg::OneSiteIterativeArith, w
     L = length(mpo)
     kvals = Float64[]
     r = zeros(scalar_type(mpsB), 0, 0)
-    isa(alg.fact, SVD) && maybe_init_boundary_s!(mpsB)
+    isa(alg.fact, SVDFact) && maybe_init_boundary_s!(mpsB)
     for site in L:-1:2
         (alg.verbosity > 2) && println("Sweeping from right to left at bond: $site.")
         mpsj = reduceD_single_site(mpsA[site], mpo[site], Cstorage[site], Cstorage[site+1])
         push!(kvals, norm(mpsj))
         (alg.verbosity > 2) && println("residual is $(kvals[end])...")
-        if isa(alg.fact, QR)
+        if isa(alg.fact, QRFact)
         	r, mpsB[site] = tlq!(mpsj, (1,), (2,3), workspace)
-        elseif isa(alg.fact, SVD)
+        elseif isa(alg.fact, SVDFact)
             u, s, v, err = tsvd!(mpsj, (1,), (2,3), workspace, trunc=alg.fact.trunc)
             mpsB[site] = v
             r = u * Diagonal(s)

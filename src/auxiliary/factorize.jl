@@ -1,7 +1,7 @@
 
 abstract type AbstractMatrixFactorization end
-struct QR <: AbstractMatrixFactorization end
-struct SVD{T<:TruncationScheme} <: AbstractMatrixFactorization 
+struct QRFact <: AbstractMatrixFactorization end
+struct SVDFact{T<:TruncationScheme} <: AbstractMatrixFactorization 
 	trunc::T
 end
-SVD(; trunc::TruncationScheme=NoTruncation()) = SVD(trunc)
+SVDFact(; trunc::TruncationScheme=NoTruncation()) = SVDFact(trunc)

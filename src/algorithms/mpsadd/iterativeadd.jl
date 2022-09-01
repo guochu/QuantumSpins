@@ -19,7 +19,7 @@ function iterative_add(mpsxs::Vector{MPS{T, R}}, alg::OneSiteIterativeArith=OneS
     	@assert ds == physical_dimensions(mpsxs[i])
     end
     mpsout = randommps(T, physical_dimensions(mpsxs[1]), D=alg.D)
-    rightorth!(mpsout, alg=QR())
+    rightorth!(mpsout, alg=QRFact())
 
     m = MPSIterativeAddCache(mpsout, mpsxs)
     kvals = compute!(m, alg)
@@ -77,7 +77,7 @@ function _rightsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeArith, works
 
     kvals = Float64[]
     l = zeros(scalar_type(mpsy), 0, 0)
-    isa(alg.fact, SVD) && maybe_init_boundary_s!(mpsy)
+    isa(alg.fact, SVDFact) && maybe_init_boundary_s!(mpsy)
     for site in L:-1:2
         (alg.verbosity > 2) && println("Sweeping from right to left at bond: $site.")
         mpsj = _compute_one_site_mpsj(mpsxs, cstorages, site)
@@ -85,9 +85,9 @@ function _rightsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeArith, works
         (alg.verbosity > 2) && println("residual is $(kvals[end])...")
         # l, mpsy[site] = tlq!(mpsj, (1,), (2,3), workspace)
 
-        if isa(alg.fact, QR)
+        if isa(alg.fact, QRFact)
             l, mpsy[site] = tlq!(mpsj, (1,), (2,3), workspace)
-        elseif isa(alg.fact, SVD)
+        elseif isa(alg.fact, SVDFact)
             u, s, v, err = tsvd!(mpsj, (1,), (2,3), workspace, trunc=alg.fact.trunc)
             mpsy[site] = v
             l = u * Diagonal(s)

@@ -135,7 +135,7 @@ function Base.kron(x::MPS, y::MPS; trunc::TruncationScheme=DefaultTruncation)
     m = reshape(v * tie(m, (1, 2)), size(v, 1), size(m, 2), size(m, 3))
     r[L] = m
     mpsout = MPS(r)
-    rightorth!(mpsout, workspace, alg=SVD(trunc=trunc))
+    rightorth!(mpsout, workspace, alg=SVDFact(trunc=trunc))
     return mpsout
 end
 
