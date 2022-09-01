@@ -32,7 +32,7 @@ export timeevo!, AbstractStepper, TEBDStepper, TDVPStepper, change_tspan_dt, TEB
 export mixed_thermalize, thermal_state, itimeevo!
 
 export AbstractMPSArith, IterativeArith, StableArith, SVDArith, iterative_mult, svd_mult, stable_mult, mpompsmult
-export iterative_add, svd_add, mpsadd
+export iterative_add, svd_add, stable_add, mpsadd
 
 # # quantum circuit simulator
 # export ZERO, ONE, X, Y, Z, S, H, sqrtX, sqrtY, T, Rx, Ry, Rz, CONTROL, CZ, CNOT, CX, SWAP, iSWAP

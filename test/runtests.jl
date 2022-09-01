@@ -140,7 +140,7 @@ function test_stable_mult(::Type{T}, L::Int) where T
 	mpo, mps = create_random_mpo_mps(T, L, d, 2, 3)
 
 	mps_exact = mpo * mps
-	mps_iterative, err = stable_mult(mpo, mps, StableArith(verbosity=0))
+	mps_iterative, err = stable_mult(mpo, mps, StableArith(D=6, verbosity=0))
 
 	return QuantumSpins.distance(mps_exact, mps_iterative) <= 1.0e-6
 end
@@ -166,8 +166,9 @@ function check_mpsadd_2(::Type{T}, L::Int) where T
 
 	c1, err = svd_add([a1,a2,a3], SVDArith(D=12))
 	c2, err = iterative_add([a1,a2,a3], IterativeArith(D=12))
+	c3, err = stable_add([a1,a2,a3], StableArith(D=12))
 
-	return distance(c1, c2) < 1.0e-5
+	return max(distance(c1, c2), distance(c1, c3)) < 1.0e-5
 end
 
 # println("-----------test mpo mps iterative mult-----------------")
