@@ -55,7 +55,7 @@ function compute!(m::MPOMPSIterativeMultCache, alg::AbstractMPSArith, workspace 
     if (alg.verbosity >= 2) && (iter < alg.maxiter)
         println("early converge in $iter-th sweeps with error $tol")
     end
-    if (alg.verbosity > 2) && (iter >= alg.maxiter)
+    if (alg.verbosity > 2) && (tol >= alg.tol)
         println("fail to converge, required precision: $(alg.tol), actual precision $tol in $iter sweeps.")
     end
 	return kvals
