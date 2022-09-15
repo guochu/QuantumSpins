@@ -29,24 +29,25 @@ end
 sweep!(m::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[]) = iterative_error_2(
     vcat(_leftsweep!(m, alg, workspace), _rightsweep!(m, alg, workspace)))
 
-function compute!(m::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[])
-	kvals = Float64[]
-	iter = 0
-	tol = 1.
-	while (iter < alg.maxiter) && (tol >= alg.tol)
-		tol = sweep!(m, alg, workspace)
-		push!(kvals, tol)
-		iter += 1
-		(alg.verbosity > 2) && println("finish the $iter-th sweep with error $tol", "\n")
-	end
-    if (alg.verbosity >= 2) && (iter < alg.maxiter)
-        println("early converge in $iter-th sweeps with error $tol")
-    end
-    if (alg.verbosity > 2) && (tol >= alg.tol)
-        println("fail to converge, required precision: $(alg.tol), actual precision $tol in $iter sweeps.")
-    end
-	return kvals
-end
+# function compute!(m::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[])
+# 	kvals = Float64[]
+# 	iter = 0
+# 	tol = 1.
+# 	while (iter < alg.maxiter) && (tol >= alg.tol)
+# 		tol = sweep!(m, alg, workspace)
+# 		push!(kvals, tol)
+# 		iter += 1
+# 		(alg.verbosity > 2) && println("finish the $iter-th sweep with error $tol", "\n")
+# 	end
+#     if (alg.verbosity >= 2) && (iter < alg.maxiter)
+#         println("early converge in $iter-th sweeps with error $tol")
+#     end
+#     if (alg.verbosity > 2) && (tol >= alg.tol)
+#         println("fail to converge, required precision: $(alg.tol), actual precision $tol in $iter sweeps.")
+#     end
+# 	return kvals
+# end
+compute!(m::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[]) = iterative_compute!(m, alg, workspace)
 
 function _leftsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[])
 	mpsxs = x.imps
