@@ -176,7 +176,7 @@ function Base.kron(a::AbstractArray{Ta, N}, b::AbstractArray{Tb, N}) where {Ta<:
 end
 
 function stable_svd!(a::StridedArray{T, 2}, workspace::AbstractVector{T}) where T
-	if length(workspace) <= length(a)
+	if length(workspace) < length(a)
 		resize!(workspace, length(a))
 	end
 	ac = reshape(view(workspace, 1:length(a)), size(a))
