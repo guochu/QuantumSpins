@@ -81,6 +81,8 @@ function _rightsweep!(m::MPOMPOIterativeMultCache, alg::OneSiteIterativeArith, w
             u, s, v, err = tsvd!(mpsj, (1,), (2,3,4), workspace, trunc=alg.fact.trunc)
             mpoB[site] = v
             r = u * Diagonal(s)
+        else
+            error("unsupported factorization method $(typeof(alg.fact))")
         end
         Cstorage[site] = updateHright(Cstorage[site+1], mpoB[site], mpo[site], mpoA[site])
     end

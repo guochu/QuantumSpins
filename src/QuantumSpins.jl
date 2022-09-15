@@ -31,7 +31,7 @@ export trotter_propagator, environments, DMRG, TDVP, sweep!, ground_state!
 export timeevo!, AbstractStepper, TEBDStepper, TDVPStepper, change_tspan_dt, TEBDCache, TDVPCache, timeevo_cache, correlation_2op_1t, exact_correlation_2op_1t
 export mixed_thermalize, thermal_state, itimeevo!
 
-export AbstractMPSArith, IterativeArith, StableArith, SVDArith, iterative_mult, svd_mult, stable_mult, mpompsmult
+export AbstractMPSArith, OneSiteIterativeArith, IterativeArith, OneSiteStableArith, StableArith, SVDArith, iterative_mult, svd_mult, stable_mult, mpompsmult
 export iterative_add, svd_add, stable_add, mpsadd
 export mpompomult
 
