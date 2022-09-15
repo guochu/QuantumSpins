@@ -29,6 +29,10 @@ prodmpo(physpaces::Vector{Int}, ms::AbstractDict{Int, M}) where {M <: AbstractMa
 prodmpo(physpaces::Vector{Int}, pos::Vector{Int}, ms::Vector{M}) where {M <: AbstractMatrix} = prodmps(eltype(M), physpaces, pos, ms)
 
 
+"""
+	randommpo(::Type{T}, dy::Vector{Int}, dx::Vector{Int}; D::Int) where {T<:Number}
+	dy are the input dimensions, dx are the output dimensions
+"""
 function randommpo(::Type{T}, dy::Vector{Int}, dx::Vector{Int}; D::Int) where {T<:Number}
 	(length(dx) == length(dy)) || throw(DimensionMismatch())
 	L = length(dx)

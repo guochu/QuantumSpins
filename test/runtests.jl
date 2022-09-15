@@ -171,9 +171,21 @@ function check_mpsadd_2(::Type{T}, L::Int) where T
 	return max(distance(c1, c2), distance(c1, c3)) < 1.0e-5
 end
 
+function check_mpompo_iterative_mult(::Type{T}, L::Int) where T
+	dx = [2 for i in 1:L]
+	dy = [3 for i in 1:L]
+
+	mpo = randommpo(T, dx, dy, D=2)
+	A = randommpo(T, dx, dx, D=3)
+
+	mpo_exact = mpo * A
+	mpo_iterative, err = iterative_mult(mpo, A, IterativeArith(D=6, verbosity=0))
+	return QuantumSpins.distance(mpo_exact, mpo_iterative)  / norm(mpo_exact) <= 1.0e-6
+end
+
 # println("-----------test mpo mps iterative mult-----------------")
 
-@testset "mpo mps iterative mult" begin
+@testset "mpo mps/mpo iterative mult" begin
 	@test test_iterative_mult(Float64, 7)
 	@test test_iterative_mult(ComplexF64, 6)
 	@test test_svd_mult(Float64, 5)
@@ -182,6 +194,8 @@ end
 	@test test_stable_mult(ComplexF64, 8)
 	@test check_mpsadd(ComplexF64, 5)
 	@test check_mpsadd_2(Float64, 7)
+	@test check_mpompo_iterative_mult(ComplexF64, 6)
+	@test check_mpompo_iterative_mult(Float64, 7)
 end
 
 

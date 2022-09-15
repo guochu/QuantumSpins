@@ -91,7 +91,15 @@ end
 bond_dimensions(h::MPO) = [bond_dimension(h, i) for i in 1:length(h)-1]
 bond_dimension(h::MPO) = maximum(bond_dimensions(h))
 
-physical_dimensions(psi::MPO) = [size(item, 2) for item in raw_data(psi)]
+ophysical_dimensions(psi::MPO) = [size(item, 2) for item in raw_data(psi)]
+iphysical_dimensions(psi::MPO) = [size(item, 4) for item in raw_data(psi)]
+
+
+function physical_dimensions(psi::MPO)
+	xs = ophysical_dimensions(psi)
+	(xs == iphysical_dimensions(psi)) || error("i and o physical dimension mismatch.")
+	return xs
+end
 
 
 
