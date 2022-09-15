@@ -175,7 +175,7 @@ function check_mpompo_iterative_mult(::Type{T}, L::Int) where T
 	dx = [2 for i in 1:L]
 	dy = [3 for i in 1:L]
 
-	mpo = randommpo(T, dx, dy, D=2)
+	mpo = randommpo(T, dy, dx, D=2)
 	A = randommpo(T, dx, dx, D=3)
 
 	mpo_exact = mpo * A

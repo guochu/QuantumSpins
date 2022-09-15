@@ -33,7 +33,7 @@ end
 
 function iterative_mult(mpo::MPO, mps::MPO, alg::OneSiteIterativeArith = OneSiteIterativeArith())
     T = promote_type(scalar_type(mpo), scalar_type(mps))
-    mpsout = randommpo(T, iphysical_dimensions(mps), ophysical_dimensions(mpo), D=alg.D)
+    mpsout = randommpo(T, ophysical_dimensions(mpo), iphysical_dimensions(mps), D=alg.D)
     # canonicalize!(mpsout, normalize=true)
     rightorth!(mpsout, alg=QRFact())
     m = MPOMPOIterativeMultCache(mpo, mps, mpsout, init_hstorage_right(mpsout, mpo, mps))

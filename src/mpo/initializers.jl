@@ -33,7 +33,7 @@ prodmpo(physpaces::Vector{Int}, pos::Vector{Int}, ms::Vector{M}) where {M <: Abs
 	randommpo(::Type{T}, dy::Vector{Int}, dx::Vector{Int}; D::Int) where {T<:Number}
 	dy are the input dimensions, dx are the output dimensions
 """
-function randommpo(::Type{T}, dy::Vector{Int}, dx::Vector{Int}; D::Int) where {T<:Number}
+function randommpo(::Type{T}, dx::Vector{Int}, dy::Vector{Int}; D::Int) where {T<:Number}
 	(length(dx) == length(dy)) || throw(DimensionMismatch())
 	L = length(dx)
 	r = Vector{Array{T, 4}}(undef, L)
