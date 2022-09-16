@@ -200,7 +200,7 @@ function tsvd!(a::StridedArray{T, 2}, workspace::AbstractVector{T}=similar(a, le
 	end
 end
 
-function tsvd!(a::AbstractArray{T, N}, left::NTuple{N1, Int}, right::NTuple{N2, Int}, workspace::AbstractVector{T}=similar(a, length(a)); 
+function tsvd!(a::StridedArray{T, N}, left::NTuple{N1, Int}, right::NTuple{N2, Int}, workspace::AbstractVector{T}=similar(a, length(a)); 
 	trunc::TruncationScheme=NoTruncation()) where {T <: Number, N, N1, N2}
 	(N == N1 + N2) || throw(DimensionMismatch())
 	if length(workspace) <= length(a)
@@ -220,6 +220,16 @@ function tsvd!(a::AbstractArray{T, N}, left::NTuple{N1, Int}, right::NTuple{N2, 
     return reshape(u, (ushape..., md)), s, reshape(v, (md, vshape...)), err
 end
 
+function tqr!(a::StridedMatrix) 
+    q, r = LinearAlgebra.qr!(a)
+    return Matrix(q), r
+end
+
+function tlq!(a::StridedMatrix) 
+    l, q = LinearAlgebra.lq!(a)
+    return l, Matrix(q)
+end
+
 """
     qr(a::AbstractArray{T, N}, axs::Tuple{NTuple{N1, Int}, NTuple{N2, Int}}) where {T, N, N1, N2}
 QR decomposition of QTensor a, by joining axs to be the second dimension
@@ -237,9 +247,10 @@ function tqr!(a::AbstractArray{T, N}, left::NTuple{N1, Int}, right::NTuple{N2, I
     dimv = shape_a[(N1+1):end]
     s2 = prod(dimv)
     bmat = copyto!(reshape(view(workspace, 1:length(a)), s1, s2), reshape(a1, s1, s2))
-    F = LinearAlgebra.qr!(bmat)
-    u = Base.Matrix(F.Q)
-    v = Base.Matrix(F.R)
+    # F = LinearAlgebra.qr!(bmat)
+    # u = Base.Matrix(F.Q)
+    # v = Base.Matrix(F.R)
+    u, v = tqr!(bmat)
     s = size(v, 1)
     return reshape(u, dimu..., s), reshape(v, s, dimv...)
 end
@@ -257,9 +268,10 @@ function tlq!(a::AbstractArray{T, N}, left::NTuple{N1, Int}, right::NTuple{N2, I
     dimv = shape_a[(N1+1):end]
     s2 = prod(dimv)
     bmat = copyto!(reshape(view(workspace, 1:length(a)), s1, s2), reshape(a1, s1, s2))
-    F = LinearAlgebra.lq!(bmat)
-    u = Matrix(F.L)
-    v = Matrix(F.Q)
+    # F = LinearAlgebra.lq!(bmat)
+    # u = Matrix(F.L)
+    # v = Matrix(F.Q)
+    u, v = tlq!(bmat)
     s = size(v, 1)
     return reshape(u, dimu..., s), reshape(v, s, dimv...)
 end
