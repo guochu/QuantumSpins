@@ -57,7 +57,7 @@ function _leftsweep!(m::MPOMPOIterativeMultCache, alg::OneSiteIterativeArith, wo
         (alg.verbosity > 2) && println("residual is $(kvals[end])...")
 		q, r = tqr!(mpsj, (1,2,4), (3,), workspace)
         mpoB[site] = permute(q, (1,2,4,3))
-        Cstorage[site+1] = updateHleft(Cstorage[site], mpoB[site], mpo[site], mpoA[site])
+        Cstorage[site+1] = updateleft(Cstorage[site], mpoB[site], mpo[site], mpoA[site])
     end
     return kvals	
 end
@@ -84,7 +84,7 @@ function _rightsweep!(m::MPOMPOIterativeMultCache, alg::OneSiteIterativeArith, w
         else
             error("unsupported factorization method $(typeof(alg.fact))")
         end
-        Cstorage[site] = updateHright(Cstorage[site+1], mpoB[site], mpo[site], mpoA[site])
+        Cstorage[site] = updateright(Cstorage[site+1], mpoB[site], mpo[site], mpoA[site])
     end
     # println("norm of r is $(norm(r))")
     mpoB[1] = @tensor tmp[1,2,5,4] := mpoB[1][1,2,3,4] * r[3,5]
@@ -96,15 +96,6 @@ function reduceH_single_site(A::AbstractArray{<:Number}, m::AbstractArray{<:Numb
     return tmp
 end
 
-function updateHleft(cleft::AbstractArray{<:Number, 3}, B::AbstractArray{<:Number, 4}, m::AbstractArray{<:Number, 4}, A::AbstractArray{<:Number, 4})
-    @tensor tmp[9,8,5] := ((cleft[1,2,3] * A[3,4,5,6]) * m[2,7,8,4]) * conj(B[1,7,9,6])
-    return tmp
-end
-
-function updateHright(cright::AbstractArray{<:Number, 3}, B::AbstractArray{<:Number, 4}, m::AbstractArray{<:Number, 4}, A::AbstractArray{<:Number, 4})
-    @tensor tmp[1,7,9] := ((conj(B[1,2,3,4]) * cright[3,5,6]) * m[7,2,5,8] ) * A[9,8,6,4]
-    return tmp
-end
 
 function init_hstorage_right(B::MPO, mpo::MPO, A::MPO)
     @assert length(B) == length(mpo) == length(A)
@@ -114,7 +105,7 @@ function init_hstorage_right(B::MPO, mpo::MPO, A::MPO)
     hstorage[1] = ones(1,1,1)
     hstorage[L+1] = ones(1,1,1)
     for i in L:-1:2
-        hstorage[i] = updateHright(hstorage[i+1], B[i], mpo[i], A[i])
+        hstorage[i] = updateright(hstorage[i+1], B[i], mpo[i], A[i])
     end
     return hstorage
 end

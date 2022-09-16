@@ -74,6 +74,16 @@ function updateleft(hold::AbstractArray{T, 2}, psiAj::MPSTensor, hj::AbstractMat
 	return hnew
 end
 
+function updateleft(cleft::AbstractArray{<:Number, 3}, B::AbstractArray{<:Number, 4}, m::AbstractArray{<:Number, 4}, A::AbstractArray{<:Number, 4})
+    @tensor tmp[9,8,5] := ((cleft[1,2,3] * A[3,4,5,6]) * m[2,7,8,4]) * conj(B[1,7,9,6])
+    return tmp
+end
+
+function updateright(cright::AbstractArray{<:Number, 3}, B::AbstractArray{<:Number, 4}, m::AbstractArray{<:Number, 4}, A::AbstractArray{<:Number, 4})
+    @tensor tmp[1,7,9] := ((conj(B[1,2,3,4]) * cright[3,5,6]) * m[7,2,5,8] ) * A[9,8,6,4]
+    return tmp
+end
+
 function updatetraceleft(hold::AbstractArray{T, 1}, hj::MPOTensor) where {T <: Number}
 	@tensor hnew[-1] := hold[1] * hj[1,2,-1,2]
 	return hnew
