@@ -46,7 +46,8 @@ function _truncate!(v::AbstractVector{<:Real}, trunc::MPSTruncation, p::Real=2)
 	if isnothing(dtrunc)
 		dtrunc = trunc.Dm
 	end
-	return _truncate!(v, TruncateDim(min(trunc.D, dtrunc)), p)
+	v, err = _truncate!(v, TruncateDim(min(trunc.D, dtrunc)), p)
+	return v, err / sca
 end
 
 
