@@ -115,7 +115,7 @@ function _open_tt_corr_a_bt(h, A::MPO, B::MPO, state, times, stepper)
 end 
 
 
-function correlation_2op_1t(h::Union{SuperOperatorBase, AbstractMPO}, a::MPO, b::MPO, state::DensityOperatorMPS, times::Vector{<:Real}; 
+function correlation_2op_1t(h::Union{SuperOperator, AbstractMPO}, a::MPO, b::MPO, state::DensityOperatorMPS, times::Vector{<:Real}; 
 	stepper::AbstractStepper=TEBDStepper(tspan=(0., 0.01), stepsize=0.01), reverse::Bool=false)
 	# (h.fuser === ⊠) || throw(ArgumentError("only fuser ⊠ is supported here."))
 	iden = id(b)

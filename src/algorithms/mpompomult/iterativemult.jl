@@ -12,24 +12,7 @@ scalar_type(m::MPOMPOIterativeMultCache) = scalar_type(m.ompo)
 sweep!(m::MPOMPOIterativeMultCache, alg::AbstractMPSArith, workspace = scalar_type(m)[]) = iterative_error_2(
     vcat(_leftsweep!(m, alg, workspace), _rightsweep!(m, alg, workspace)))
 
-# function compute!(m::MPOMPOIterativeMultCache, alg::AbstractMPSArith, workspace = scalar_type(m)[])
-#     kvals = Float64[]
-#     iter = 0
-#     tol = 1.
-#     while (iter < alg.maxiter) && (tol >= alg.tol)
-#         tol = sweep!(m, alg, workspace)
-#         push!(kvals, tol)
-#         iter += 1
-#         (alg.verbosity > 2) && println("finish the $iter-th sweep with error $tol", "\n")
-#     end
-#     if (alg.verbosity >= 2) && (iter < alg.maxiter)
-#         println("early converge in $iter-th sweeps with error $tol")
-#     end
-#     if (alg.verbosity > 2) && (tol >= alg.tol)
-#         println("fail to converge, required precision: $(alg.tol), actual precision $tol in $iter sweeps.")
-#     end
-#     return kvals
-# end
+
 compute!(m::MPOMPOIterativeMultCache, alg::AbstractMPSArith, workspace = scalar_type(m)[]) = iterative_compute!(m, alg, workspace)
 
 function iterative_mult(mpo::MPO, mps::MPO, alg::OneSiteIterativeArith = OneSiteIterativeArith())
@@ -51,10 +34,10 @@ function _leftsweep!(m::MPOMPOIterativeMultCache, alg::OneSiteIterativeArith, wo
     L = length(mpo)
     kvals = Float64[]
     for site in 1:L-1
-        (alg.verbosity > 2) && println("Sweeping from left to right at bond: $site.")
+        (alg.verbosity > 3) && println("Sweeping from left to right at bond: $site.")
         mpsj = reduceH_single_site(mpoA[site], mpo[site], Cstorage[site], Cstorage[site+1])
         push!(kvals, norm(mpsj))
-        (alg.verbosity > 2) && println("residual is $(kvals[end])...")
+        (alg.verbosity > 1) && println("residual is $(kvals[end])...")
 		q, r = tqr!(mpsj, (1,2,4), (3,), workspace)
         mpoB[site] = permute(q, (1,2,4,3))
         Cstorage[site+1] = updateleft(Cstorage[site], mpoB[site], mpo[site], mpoA[site])
@@ -71,10 +54,10 @@ function _rightsweep!(m::MPOMPOIterativeMultCache, alg::OneSiteIterativeArith, w
     kvals = Float64[]
     r = zeros(scalar_type(mpoB), 0, 0)
     for site in L:-1:2
-        (alg.verbosity > 2) && println("Sweeping from right to left at bond: $site.")
+        (alg.verbosity > 3) && println("Sweeping from right to left at bond: $site.")
         mpsj = reduceH_single_site(mpoA[site], mpo[site], Cstorage[site], Cstorage[site+1])
         push!(kvals, norm(mpsj))
-        (alg.verbosity > 2) && println("residual is $(kvals[end])...")
+        (alg.verbosity > 1) && println("residual is $(kvals[end])...")
         if isa(alg.fact, QRFact)
         	r, mpoB[site] = tlq!(mpsj, (1,), (2,3,4), workspace)
         elseif isa(alg.fact, SVDFact)

@@ -83,11 +83,13 @@ Base.:*(h::MPO, psi::DensityOperatorMPS) = DensityOperatorMPS(h * psi.data, psi.
     Base.:*(hA::M, hB::M) where {M <: MPO}
     a * b
 """
-function Base.:*(hA::MPO, hB::MPO) 
+Base.:*(hA::MPO, hB::MPO) = MPO(_mult_n_n(raw_data(hA), raw_data(hB)))
+
+function _mult_n_n(hA::Vector{<:MPOTensor}, hB::Vector{<:MPOTensor})
     (length(hA) == length(hB)) || throw(DimensionMismatch())
     isempty(hA) && throw(ArgumentError("input operator is empty."))
-    r = [@tensor tmp[-1 -2 -3; -4 -5 -6] := aj[-1, -3, -4, 1] * bj[-2, 1, -5, -6] for (aj, bj) in zip(raw_data(hA), raw_data(hB))]
-    return MPO([tie(item, (2,1,2,1)) for item in r])
+    r = [@tensor tmp[-1 -2 -3; -4 -5 -6] := aj[-1, -3, -4, 1] * bj[-2, 1, -5, -6] for (aj, bj) in zip(hA, hB)]
+    return [tie(item, (2,1,2,1)) for item in r]
 end
 
 const MPO_APPROX_EQUAL_ATOL = 1.0e-12
@@ -97,9 +99,6 @@ const MPO_APPROX_EQUAL_ATOL = 1.0e-12
     Check is two MPOs are approximated equal 
 """
 Base.isapprox(a::MPO, b::MPO; atol=MPO_APPROX_EQUAL_ATOL) = distance2(a, b) <= atol
-
-space_l(h::MPO) = size(h[1], 1)
-space_r(h::MPO) = size(h[end], 3)
 
 r_RR(psiA::MPS, h::MPO, psiB::MPS) = reshape(_eye(promote_type(scalar_type(psiA), scalar_type(h), scalar_type(psiB)), space_r(psiA), space_r(h) * space_r(psiB)),
 	space_r(psiA), space_r(h), space_r(psiB))

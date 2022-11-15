@@ -224,17 +224,17 @@ end
 function TDVPCache(h::QuantumOperator, stepper::TDVPStepper, state::MPS) 
 	is_constant(h) ? HomogeousTDVPCache(h, stepper, state) : InhomogenousTDVPCache(h, stepper, state)
 end
-TDVPCache(h::SuperOperatorBase, stepper::TDVPStepper, state::DensityOperatorMPS) = TDVPCache(h.data, stepper, state.data)
+TDVPCache(h::SuperOperator, stepper::TDVPStepper, state::DensityOperatorMPS) = TDVPCache(h.data, stepper, state.data)
 
 timeevo_cache(h::QuantumOperator, stepper::TEBDStepper, state::MPS) = TEBDCache(h, stepper)
-timeevo_cache(h::SuperOperatorBase, stepper::TEBDStepper, state::DensityOperatorMPS) = TEBDCache(h.data, stepper)
+timeevo_cache(h::SuperOperator, stepper::TEBDStepper, state::DensityOperatorMPS) = TEBDCache(h.data, stepper)
 timeevo_cache(h::MPO, stepper::TDVPStepper, state::MPS) = TDVPCache(h, stepper, state)
 timeevo_cache(h::MPO, stepper::TDVPStepper, state::DensityOperatorMPS) = TDVPCache(h, stepper, state.data)
 timeevo_cache(h::QuantumOperator, stepper::TDVPStepper, state::MPS) = TDVPCache(h, stepper, state)
-timeevo_cache(h::SuperOperatorBase, stepper::TDVPStepper, state::DensityOperatorMPS) = TDVPCache(h, stepper, state)
+timeevo_cache(h::SuperOperator, stepper::TDVPStepper, state::DensityOperatorMPS) = TDVPCache(h, stepper, state)
 
 timeevo!(state::MPS, h::QuantumOperator, stepper::TEBDStepper, cache=TEBDCache(h, stepper)) = make_step!(h, stepper, state, cache)
-function timeevo!(state::DensityOperatorMPS, h::SuperOperatorBase, stepper::TEBDStepper, cache=TEBDCache(h.data, stepper))
+function timeevo!(state::DensityOperatorMPS, h::SuperOperator, stepper::TEBDStepper, cache=TEBDCache(h.data, stepper))
 	make_step!(h.data, stepper, state.data, cache)
 	return state, cache
 end 
@@ -243,7 +243,7 @@ function timeevo!(state::DensityOperatorMPS, h::MPO, stepper::TDVPStepper, cache
 	make_step!(h, stepper, state.data, cache)
 	return state, cache
 end
-function timeevo!(state::DensityOperatorMPS, h::SuperOperatorBase, stepper::TDVPStepper, cache=TDVPCache(h, stepper, state.data))
+function timeevo!(state::DensityOperatorMPS, h::SuperOperator, stepper::TDVPStepper, cache=TDVPCache(h, stepper, state.data))
 	make_step!(h.data, stepper, state.data, cache)
 	return state, cache
 end

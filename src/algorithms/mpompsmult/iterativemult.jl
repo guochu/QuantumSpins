@@ -42,24 +42,6 @@ scalar_type(m::MPOMPSIterativeMultCache) = scalar_type(m.omps)
 sweep!(m::MPOMPSIterativeMultCache, alg::AbstractMPSArith, workspace = scalar_type(m)[]) = iterative_error_2(
     vcat(_leftsweep!(m, alg, workspace), _rightsweep!(m, alg, workspace)))
 
-# function compute!(m::MPOMPSIterativeMultCache, alg::AbstractMPSArith, workspace = scalar_type(m)[])
-# 	kvals = Float64[]
-# 	iter = 0
-# 	tol = 1.
-# 	while (iter < alg.maxiter) && (tol >= alg.tol)
-# 		tol = sweep!(m, alg, workspace)
-# 		push!(kvals, tol)
-# 		iter += 1
-# 		(alg.verbosity > 2) && println("finish the $iter-th sweep with error $tol", "\n")
-# 	end
-#     if (alg.verbosity >= 2) && (iter < alg.maxiter)
-#         println("early converge in $iter-th sweeps with error $tol")
-#     end
-#     if (alg.verbosity > 2) && (tol >= alg.tol)
-#         println("fail to converge, required precision: $(alg.tol), actual precision $tol in $iter sweeps.")
-#     end
-# 	return kvals
-# end
 compute!(m::MPOMPSIterativeMultCache, alg::AbstractMPSArith, workspace = scalar_type(m)[]) = iterative_compute!(m, alg, workspace)
 
 function iterative_mult(mpo::MPO, mps::MPS, alg::OneSiteIterativeArith = OneSiteIterativeArith())
@@ -80,10 +62,10 @@ function _leftsweep!(m::MPOMPSIterativeMultCache, alg::OneSiteIterativeArith, wo
     L = length(mpo)
     kvals = Float64[]
     for site in 1:L-1
-        (alg.verbosity > 2) && println("Sweeping from left to right at bond: $site.")
+        (alg.verbosity > 3) && println("Sweeping from left to right at bond: $site.")
         mpsj = reduceD_single_site(mpsA[site], mpo[site], Cstorage[site], Cstorage[site+1])
         push!(kvals, norm(mpsj))
-        (alg.verbosity > 2) && println("residual is $(kvals[end])...")
+        (alg.verbosity > 1) && println("residual is $(kvals[end])...")
 		mpsB[site], r = tqr!(mpsj, (1,2), (3,), workspace)
         Cstorage[site+1] = updateleft(Cstorage[site], mpsB[site], mpo[site], mpsA[site])
     end
@@ -100,10 +82,10 @@ function _rightsweep!(m::MPOMPSIterativeMultCache, alg::OneSiteIterativeArith, w
     r = zeros(scalar_type(mpsB), 0, 0)
     isa(alg.fact, SVDFact) && maybe_init_boundary_s!(mpsB)
     for site in L:-1:2
-        (alg.verbosity > 2) && println("Sweeping from right to left at bond: $site.")
+        (alg.verbosity > 3) && println("Sweeping from right to left at bond: $site.")
         mpsj = reduceD_single_site(mpsA[site], mpo[site], Cstorage[site], Cstorage[site+1])
         push!(kvals, norm(mpsj))
-        (alg.verbosity > 2) && println("residual is $(kvals[end])...")
+        (alg.verbosity > 1) && println("residual is $(kvals[end])...")
         if isa(alg.fact, QRFact)
         	r, mpsB[site] = tlq!(mpsj, (1,), (2,3), workspace)
         elseif isa(alg.fact, SVDFact)
@@ -131,11 +113,11 @@ end
 #     kvals = Float64[]
 #     trunc = MPSTruncation(D=alg.D, ϵ=alg.tol/10)
 #     for site in 1:L-2
-#         (alg.verbosity > 2) && println("Sweeping from left to right at bond: $site.")
+#         (alg.verbosity > 3) && println("Sweeping from left to right at bond: $site.")
 #         @tensor twompsA[1,2,4,5] := mpsA[site][1,2,3] * mpsA[site+1][3,4,5]
 #         twompsB = reduceD_single_bond(twompsA, mpo[site], mpo[site+1], Cstorage[site], Cstorage[site+2])
 #         push!(kvals, norm(twompsB))
-#         (alg.verbosity >= 2) && println("residual is $(kvals[end])...")
+#         (alg.verbosity >= 1) && println("residual is $(kvals[end])...")
 #         mpsB[site], s, mpsB[site+1], bet = tsvd!(twompsB, (1,2),(3,4), workspace, trunc=trunc)
 #         Cstorage[site+1] = updateleft(Cstorage[site], mpsB[site], mpo[site], mpsA[site])
 #     end
@@ -152,11 +134,11 @@ end
 #     trunc = MPSTruncation(D=alg.D, ϵ=alg.tol/10)
 #     maybe_init_boundary_s!(mpsB)
 #     for site in L-1:-1:1
-#         (alg.verbosity > 2) && println("we are sweeping from right to left at bond: $site.")
+#         (alg.verbosity > 3) && println("we are sweeping from right to left at bond: $site.")
 #         @tensor twompsA[1,2,4,5] := mpsA[site][1,2,3] * mpsA[site+1][3,4,5]
 #         twompsB = reduceD_single_bond(twompsA, mpo[site], mpo[site+1], Cstorage[site], Cstorage[site+2])
 #         push!(kvals, norm(twompsB))
-#         (alg.verbosity >= 2) && println("residual is $(kvals[end])...")
+#         (alg.verbosity >= 1) && println("residual is $(kvals[end])...")
 #         mpsB[site], s, mpsB[site+1], bet = tsvd!(twompsB, (1,2),(3,4), workspace, trunc=trunc)
 #         mpsB.s[site+1] = s
 #         Cstorage[site+1] = updateright(Cstorage[site+2], mpsB[site+1], mpo[site+1], mpsA[site+1])

@@ -3,6 +3,7 @@
 	assume the underlying state is canonical
 """
 function expectation_canonical(m::QTerm, psi::MPS)
+	isstrict(m) || throw(ArgumentError("QTerm should be strict."))
 	is_constant(m) || throw(ArgumentError("only constant QTerm allowed."))
 	is_zero(m) && return 0.
 	L = length(psi)
@@ -11,7 +12,7 @@ function expectation_canonical(m::QTerm, psi::MPS)
 	pos_end = pos[end]
 	(pos_end <= L) || throw(BoundsError())
 	util = ones(1)
-	@tensor hold[-1; -3] := conj(psi[pos_end][-1, 1, 2]) * psi[pos_end][-3, 4, 2] * ops[end][1, 4] 
+	@tensor hold[-1; -2 -3] := conj(psi[pos_end][-1, 1, 2]) * psi[pos_end][-3, 4, 2] * ops[end][-2, 1, 3, 4] * util[3]
 	for j in pos_end-1:-1:pos[1]
 		pj = findfirst(x->x==j, pos)
 		if isnothing(pj)
@@ -20,8 +21,8 @@ function expectation_canonical(m::QTerm, psi::MPS)
 			hold = updateright(hold, psi[j], ops[pj], psi[j])
 		end
 	end	 
-	s = psi.s[pos[1]]
-	hnew = Diagonal(s) * hold * Diagonal(s)
+	s = diag(psi.s[pos[1]])
+	@tensor hnew[-1; -2] := conj(s[-1, 1]) * hold[1, 2, 3] * conj(util[2]) * s[-2, 3]
  	return tr(hnew) * value(coeff(m))
 end
 
@@ -29,14 +30,16 @@ function expectation(psiA::MPS, m::QTerm, psiB::MPS, envs::OverlapCache=environm
 	cstorage = envs.cstorage
 	(length(psiA) == length(psiB) == length(cstorage)-1) || throw(DimensionMismatch())
 	is_constant(m) || throw(ArgumentError("only constant QTerm allowed."))
+	isstrict(m) || throw(ArgumentError("QTerm should be strict."))
 	is_zero(m) && return 0.
 	L = length(psiA)
 	pos = positions(m)
 	ops = op(m)
 	pos_end = pos[end]
 	(pos_end <= L) || throw(BoundsError())
-	@tensor hold[-1; -3] := conj(psiA[pos_end][-1, 1, 2]) * cstorage[pos_end+1][2, 3] * psiB[pos_end][-3, 5, 3] * ops[end][1, 5]
-	for j in pos_end-1:-1:1
+	util = ones(1)
+	@tensor hold[-1; -2 -3] := conj(psiA[pos_end][-1, 1, 2]) * cstorage[pos_end+1][2, 3] * psiB[pos_end][-3, 5, 3] * ops[end][-2, 1, 4, 5] * util[4]
+	for j in pos_end-1:-1:pos[1]
 		pj = findfirst(x->x==j, pos)
 		if isnothing(pj)
 			hold = updateright(hold, psiA[j], pj, psiB[j])
@@ -44,7 +47,11 @@ function expectation(psiA::MPS, m::QTerm, psiB::MPS, envs::OverlapCache=environm
 			hold = updateright(hold, psiA[j], ops[pj], psiB[j])
 		end
 	end
-	return scalar(hold) * value(coeff(m))
+	@tensor hnew[-1; -2] := conj(util[1]) * hold[-1, 1, -2]
+	for j in pos[1]-1:-1:1
+		hnew = updateright(hnew, psiA[j], psiB[j])
+	end
+	return scalar(hnew) * value(coeff(m))
 end
 
 expectation(m::QTerm, psi::MPS; iscanonical::Bool=false) = iscanonical ? expectation_canonical(m, psi) : expectation(psi, m, psi)
@@ -72,12 +79,12 @@ end
 
 # density operator
 """
-	expectation(m::QTerm, psi::FiniteDensityOperatorMPS) 
+	expectation(m::SuperTerm, psi::DensityOperatorMPS) 
 	⟨I|h|ρ⟩
 """
-expectation(m::QTerm, psi::DensityOperatorMPS, envs=environments(psi)) = expectation(psi.I, m, psi.data, envs)
+expectation(m::SuperTerm, psi::DensityOperatorMPS, envs=environments(psi)) = expectation(psi.I, data(m), psi.data, envs)
 
-function expectation(h::SuperOperatorBase, psi::DensityOperatorMPS)
+function expectation(h::SuperOperator, psi::DensityOperatorMPS)
 	envs = environments(psi)
 	r = 0.
 	for m in qterms(h)
@@ -86,7 +93,7 @@ function expectation(h::SuperOperatorBase, psi::DensityOperatorMPS)
 	return r
 end
 expectation(h::QuantumOperator, psi::DensityOperatorMPS) = expectation(
-	SuperOperatorBase(QuantumOperator([superoperator(item, id(item)) for item in qterms(h)])), psi)
+	SuperOperator(QuantumOperator([superoperator(item, id(item)) for item in qterms(h)])), psi)
 
 
 

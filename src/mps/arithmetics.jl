@@ -1,6 +1,6 @@
 
 
-function LinearAlgebra.dot(psiA::MPS, psiB::MPS) 
+function LinearAlgebra.dot(psiA::AbstractMPS, psiB::AbstractMPS) 
 	(length(psiA) == length(psiB)) || throw(ArgumentError("dimension mismatch."))
     hold = l_LL(psiA)
     for i in 1:length(psiA)
@@ -8,12 +8,10 @@ function LinearAlgebra.dot(psiA::MPS, psiB::MPS)
     end
     return tr(hold)
 end
-LinearAlgebra.dot(psiA::DensityOperatorMPS, psiB::DensityOperatorMPS) = dot(psiA.data, psiB.data)
 
-function LinearAlgebra.norm(psi::MPS; iscanonical::Bool=false) 
+function LinearAlgebra.norm(psi::AbstractMPS; iscanonical::Bool=false) 
 	iscanonical ? norm(psi[1]) : sqrt(real(dot(psi, psi)))
 end
-LinearAlgebra.norm(psi::DensityOperatorMPS; kwargs...) = norm(psi.data; kwargs...)
 
 
 
@@ -21,18 +19,16 @@ LinearAlgebra.norm(psi::DensityOperatorMPS; kwargs...) = norm(psi.data; kwargs..
     distance(a, b)
 Square of Euclidean distance between a and b.
 """
-distance2(a::MPS, b::MPS) = _distance2(a, b)
-distance2(a::DensityOperatorMPS, b::DensityOperatorMPS) = distance2(a.data, b.data)
+distance2(a::AbstractMPS, b::AbstractMPS) = _distance2(a, b)
 
 """
     distance(a, b)
 Euclidean distance between a and b.
 """
-distance(a::MPS, b::MPS) = _distance(a, b)
-distance(a::DensityOperatorMPS, b::DensityOperatorMPS) = distance(a.data, b.data)
+distance(a::AbstractMPS, b::AbstractMPS) = _distance(a, b)
 
 
-function LinearAlgebra.normalize!(psi::MPS; iscanonical::Bool=false)
+function LinearAlgebra.normalize!(psi::AbstractPureStateMPS; iscanonical::Bool=false)
     n = norm(psi, iscanonical=iscanonical)
     (n ≈ zero(n)) && @warn "quantum state has zero norm."
     if n != one(n)
@@ -47,7 +43,7 @@ function LinearAlgebra.normalize!(psi::MPS; iscanonical::Bool=false)
     end
     return psi
 end
-LinearAlgebra.normalize(psi::MPS; iscanonical::Bool=false) = normalize!(copy(psi); iscanonical=iscanonical)
+LinearAlgebra.normalize(psi::AbstractPureStateMPS; iscanonical::Bool=false) = normalize!(copy(psi); iscanonical=iscanonical)
 
 function Base.:*(psi::MPS, f::Number)
 	T = coerce_scalar_type(scalar_type(psi), typeof(f)) 

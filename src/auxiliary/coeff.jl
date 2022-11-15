@@ -15,11 +15,13 @@ struct Coefficient{T} <: AbstractCoefficient
 	Coefficient{T}(x::Coefficient) where T = new{T}(value(x))
 end
 
+const AllowedCoefficient = Union{Number, Function, Coefficient}
+
 # value(x::Number) = x
 value(x::Coefficient) = x.value
 Coefficient(x::Coefficient) = Coefficient(value(x))
 Base.copy(x::Coefficient) = Coefficient(value(x))
-coeff(x::Union{Number, Function, Coefficient}) = Coefficient(x)
+coeff(x::AllowedCoefficient) = Coefficient(x)
 
 Base.:*(x::Coefficient{<:Number}, y::Number) = Coefficient(value(x) * y)
 Base.:*(x::Coefficient{<:Function}, y::Number) = Coefficient(z->value(x)(z)*y)

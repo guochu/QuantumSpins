@@ -143,7 +143,7 @@ function trotter_propagator(ham::QuantumOperator, tspan::Tuple{<:Number, <:Numbe
 	return circuit
 end
 
-trotter_propagator(ham::SuperOperatorBase, tspan::Tuple{<:Number, <:Number}; kwargs...) = trotter_propagator(ham.data, tspan; kwargs...)
+trotter_propagator(ham::SuperOperator, tspan::Tuple{<:Number, <:Number}; kwargs...) = trotter_propagator(ham.data, tspan; kwargs...)
 
 # """
 # 	infinite tebd circuit

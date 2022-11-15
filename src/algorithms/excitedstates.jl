@@ -18,12 +18,12 @@ function leftsweep!(m::ProjectedExpectationCache, alg::DMRG)
 	Energies = Float64[]
 	delta = 0.
 	for site in 1:length(mps)-1
-		(alg.verbosity > 2) && println("sweeping from left to right at site: $site.")
+		(alg.verbosity > 3) && println("sweeping from left to right at site: $site.")
 		p1 = [c_proj(projectors[l][site], cstorages[l][site], cstorages[l][site+1]) for l in 1:length(cstorages)]
 		sitemps = _project!(copy(mps[site]), p1)
 		eigvals, vecs = eigsolve(x->_project!(ac_prime(x, mpo[site], hstorage[site], hstorage[site+1]), p1), sitemps, 1, :SR, Lanczos())
 		push!(Energies, eigvals[1])
-		(alg.verbosity > 2) && println("Energy after optimization on site $site is $(Energies[end]).")
+		(alg.verbosity > 1) && println("Energy after optimization on site $site is $(Energies[end]).")
 		delta = max(delta, calc_galerkin(m, site) )
 		# prepare mps site tensor to be left canonical
 		Q, R = tqr!(vecs[1], (1,2), (3,))
@@ -47,12 +47,12 @@ function rightsweep!(m::ProjectedExpectationCache, alg::DMRG)
 	Energies = Float64[]
 	delta = 0.
 	for site in length(mps):-1:2
-		(alg.verbosity > 2) && println("sweeping from right to left at site: $site.")
+		(alg.verbosity > 3) && println("sweeping from right to left at site: $site.")
 		p1 = [c_proj(projectors[l][site], cstorages[l][site], cstorages[l][site+1]) for l in 1:length(cstorages)]
 		sitemps = _project!(copy(mps[site]), p1)
 		eigvals, vecs = eigsolve(x->_project!(ac_prime(x, mpo[site], hstorage[site], hstorage[site+1]), p1), sitemps, 1, :SR, Lanczos())
 		push!(Energies, eigvals[1])
-		(alg.verbosity > 2) && println("Energy after optimization on site $site is $(Energies[end]).")		
+		(alg.verbosity > 1) && println("Energy after optimization on site $site is $(Energies[end]).")		
 		delta = max(delta, calc_galerkin(m, site) )
 		# prepare mps site tensor to be right canonical
 		L, Q = tlq!(vecs[1], (1,), (2,3))

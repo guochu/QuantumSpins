@@ -1,17 +1,5 @@
 
-function _check_mps_space(mpstensors::Vector)
-	L = length(mpstensors)
-	for i in 1:L-1
-		(size(mpstensors[i], 3) == size(mpstensors[i+1], 1)) || throw(DimensionMismatch())
-	end
-
-	# just require the left boundary to be a single sector
-	(size(mpstensors[1], 1) == 1) || throw(DimensionMismatch("left boundary should be size 1."))
-	# (size(mpstensors[L], 3) == 1) || throw(DimensionMismatch("right boundary should be size 1."))
-	return true
-end
-
-struct MPS{T<:Number, R<:Real} <: AbstractMPS
+struct MPS{T<:Number, R<:Real} <: AbstractPureStateMPS
 	data::Vector{Array{T, 3}}
 	svectors::Vector{Array{R, 1}}
 
@@ -49,11 +37,6 @@ end
 MPS(data::Vector{<:MPSTensor{T}}) where {T <: Number} = MPS{T}(data)
 MPS{T}(L::Int) where {T<:Number} = MPS{T, real(T)}(L)
 
-"""
-	The raw mps data as a list of 3-dimension tensors
-	This is not supposed to be directly used by users
-"""
-raw_data(psi::MPS) = psi.data
 
 """
 	The singular vectors are stored anyway even if the mps is not unitary.
@@ -62,18 +45,8 @@ raw_data(psi::MPS) = psi.data
 raw_singular_matrices(psi::MPS) = psi.svectors
 
 Base.eltype(::Type{MPS{T, R}}) where {T, R} = Array{T, 3}
-Base.eltype(psi::MPS) = eltype(typeof(psi))
-Base.length(psi::MPS) = length(raw_data(psi))
-Base.isempty(psi::MPS) = isempty(raw_data(psi))
-Base.size(psi::MPS, i...) = size(raw_data(psi), i...)
-Base.getindex(psi::MPS, i::Int) = getindex(raw_data(psi), i)
-Base.lastindex(psi::MPS) = lastindex(raw_data(psi))
-Base.firstindex(psi::MPS) = firstindex(raw_data(psi))
+scalar_type(::Type{MPS{T, R}}) where {T, R} = T
 
-Base.getindex(psi::MPS,r::AbstractRange{Int64}) = [psi[ri] for ri in r]
-function Base.setindex!(psi::MPS, v::MPSTensor, i::Int)
-	return setindex!(raw_data(psi), v, i)
-end 
 function Base.copy(psi::MPS)
 	if svectors_uninitialized(psi)
 		return MPS(copy(raw_data(psi)))
@@ -84,18 +57,8 @@ end
 Base.conj(psi::MPS) = MPS(conj.(raw_data(psi)), copy(raw_singular_matrices(psi)) )
 Base.adjoint(psi::MPS) = conj(psi)
 
-scalar_type(::Type{MPS{T, R}}) where {T, R} = T
-scalar_type(x::MPS) = scalar_type(typeof(x))
 
-space_l(psi::MPS) = size(psi[1], 1)
-space_r(psi::MPS) = size(psi[end], 3)
-
-r_RR(psiA::MPS, psiB::MPS) = _eye(promote_type(scalar_type(psiA), scalar_type(psiB)), space_r(psiA), space_r(psiB))
-r_RR(psi::MPS) = r_RR(psi, psi)
-l_LL(psiA::MPS, psiB::MPS) = _eye(promote_type(scalar_type(psiA), scalar_type(psiB)), space_l(psiA), space_l(psiB))
-l_LL(psi::MPS) = l_LL(psi, psi)
-
-Base.cat(psiA::MPS, psiB::MPS) = MPS(vcat(raw_data(psiA), raw_data(psiB)))
+Base.vcat(psiA::MPS, psiB::MPS) = MPS(vcat(raw_data(psiA), raw_data(psiB)))
 # Base.conj(psi::MPS) = MPS(conj.(raw_data(psi)), raw_singular_matrices(psi))
 
 function Base.complex(psi::MPS)
@@ -121,20 +84,6 @@ svectors_uninitialized(psi::MPS) = _svectors_uninitialized(psi)
 svectors_initialized(psi::MPS) = !svectors_uninitialized(psi)
 
 
-
-function maybe_init_boundary_s!(psi::MPS{T, R}) where {T, R}
-	isempty(psi) && return
-	L = length(psi)
-	if !isassigned(raw_singular_matrices(psi), 1)
-		# (dim(space(psi[1], 1)) == 1) || throw(SpaceMismatch())
-		sm = space_l(psi)
-		psi.s[1] = [1/sqrt(sm) for i in 1:sm]
-	end
-	if !isassigned(raw_singular_matrices(psi), L+1)
-		sm = space_r(psi)
-		psi.s[L+1] = [1/sqrt(sm) for i in 1:sm]
-	end
-end
 
 function _is_left_canonical(psij::MPSTensor; kwargs...)
 	@tensor r[-1, -2] := conj(psij[1,2,-1]) * psij[1,2,-2]
@@ -168,24 +117,7 @@ This form is useful for time evolution for stability issue and also efficient fo
 """
 iscanonical(psi::MPS; kwargs...) = is_right_canonical(psi; kwargs...)
 
-"""
-	bond_dimension(psi::MPS[, bond::Int])
-	bond_dimension(h::MPO[, bond::Int])
-return bond dimension at the given bond, or return the largest bond dimension of all bonds.
-"""
-bond_dimension(psi::MPS, bond::Int) = begin
-	((bond >= 1) && (bond < length(psi))) || throw(BoundsError())
-	size(psi[bond], 3)
-end 
-bond_dimensions(psi::MPS) = [bond_dimension(psi, i) for i in 1:length(psi)-1]
-bond_dimension(psi::MPS) = maximum(bond_dimensions(psi))
 
-"""
-	physical_dimensions(psi::MPS)
-	physical_dimensions(psi::MPO) 
-Return all the physical spaces of MPS or MPO
-"""
-physical_dimensions(psi::MPS) = [size(item, 2) for item in raw_data(psi)]
 
 function max_bond_dimensions(physpaces::Vector{Int}, D::Int) 
 	L = length(physpaces)
@@ -220,4 +152,14 @@ function increase_bond!(psi::MPS; D::Int)
 end
 
 
+function _check_mps_space(mpstensors::Vector)
+	L = length(mpstensors)
+	for i in 1:L-1
+		(size(mpstensors[i], 3) == size(mpstensors[i+1], 1)) || throw(DimensionMismatch())
+	end
 
+	# just require the left boundary to be a single sector
+	(size(mpstensors[1], 1) == 1) || throw(DimensionMismatch("left boundary should be size 1."))
+	# (size(mpstensors[L], 3) == 1) || throw(DimensionMismatch("right boundary should be size 1."))
+	return true
+end

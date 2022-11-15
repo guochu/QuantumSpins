@@ -29,24 +29,7 @@ end
 sweep!(m::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[]) = iterative_error_2(
     vcat(_leftsweep!(m, alg, workspace), _rightsweep!(m, alg, workspace)))
 
-# function compute!(m::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[])
-# 	kvals = Float64[]
-# 	iter = 0
-# 	tol = 1.
-# 	while (iter < alg.maxiter) && (tol >= alg.tol)
-# 		tol = sweep!(m, alg, workspace)
-# 		push!(kvals, tol)
-# 		iter += 1
-# 		(alg.verbosity > 2) && println("finish the $iter-th sweep with error $tol", "\n")
-# 	end
-#     if (alg.verbosity >= 2) && (iter < alg.maxiter)
-#         println("early converge in $iter-th sweeps with error $tol")
-#     end
-#     if (alg.verbosity > 2) && (tol >= alg.tol)
-#         println("fail to converge, required precision: $(alg.tol), actual precision $tol in $iter sweeps.")
-#     end
-# 	return kvals
-# end
+
 compute!(m::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[]) = iterative_compute!(m, alg, workspace)
 
 function _leftsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[])
@@ -57,10 +40,10 @@ function _leftsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeArith, worksp
 	L = length(mpsy)
 	kvals = Float64[]
     for site in 1:L-1
-        (alg.verbosity > 2) && println("Sweeping from left to right at bond: $site.")
+        (alg.verbosity > 3) && println("Sweeping from left to right at bond: $site.")
         mpsj = _compute_one_site_mpsj(mpsxs, cstorages, site)
         push!(kvals, norm(mpsj))
-        (alg.verbosity >= 2) && println("residual is $(kvals[end])...")
+        (alg.verbosity > 1) && println("residual is $(kvals[end])...")
 		mpsy[site], r = tqr!(mpsj, (1,2), (3,), workspace)
         for n in 1:N
             cstorages[n][site+1] = updateleft(cstorages[n][site], mpsy[site], mpsxs[n][site])
@@ -80,10 +63,10 @@ function _rightsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeArith, works
     l = zeros(scalar_type(mpsy), 0, 0)
     isa(alg.fact, SVDFact) && maybe_init_boundary_s!(mpsy)
     for site in L:-1:2
-        (alg.verbosity > 2) && println("Sweeping from right to left at bond: $site.")
+        (alg.verbosity > 3) && println("Sweeping from right to left at bond: $site.")
         mpsj = _compute_one_site_mpsj(mpsxs, cstorages, site)
         push!(kvals, norm(mpsj))
-        (alg.verbosity > 2) && println("residual is $(kvals[end])...")
+        (alg.verbosity > 1) && println("residual is $(kvals[end])...")
         # l, mpsy[site] = tlq!(mpsj, (1,), (2,3), workspace)
 
         if isa(alg.fact, QRFact)

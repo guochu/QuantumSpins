@@ -1,7 +1,7 @@
 
 
 mixed_thermalize(m::QTerm) = superoperator(m, id(m))
-mixed_thermalize(h::QuantumOperator) = SuperOperatorBase(QuantumOperator([mixed_thermalize(item) for item in qterms(h)]))
+mixed_thermalize(h::QuantumOperator) = SuperOperator(QuantumOperator([mixed_thermalize(item) for item in qterms(h)]))
 mixed_thermalize(h::MPO) = kron(h, id(h))
 
 function thermal_state(h::Union{QuantumOperator, MPO}; β::Real, stepper::AbstractStepper=TEBDStepper(stepsize=0.05, order=4)) 

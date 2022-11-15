@@ -1,7 +1,7 @@
 using LinearAlgebra: BlasFloat, LAPACK
 using LinearAlgebra.BLAS: gemm, gemm!
 
-is_zero(x::AbstractMatrix) = isapprox(x, zero(x))
+is_zero(x::AbstractArray) = isapprox(x, zero(x))
 scalar_type(::Type{<:AbstractArray{T}}) where {T <: Number} = T
 scalar_type(x::AbstractArray{T}) where {T <: Number} = T
 
@@ -132,31 +132,6 @@ function contract(a::AbstractArray{Ta, Na}, b::AbstractArray{Tb, Nb}, axs::Tuple
     return reshape(tie(ap, (Na-N, N)) * tie(bp, (N, Nb-N)), size(ap)[1:(Na-N)]..., size(bp)[(N+1):Nb]...)
 end
 
-
-function _join_chain_ops(op) 
-	isempty(op) && error("ops is empty.")
-	nb = length(op)
-	m = op[1]
-	for i in 2:length(op)
-		m = contract(m, op[i], ((), ()))
-	end
-	if nb == 1
-		return m
-	else
-		perm = vcat(collect(1:2:2*nb), collect(2:2:2*nb))
-		return permute(m, perm)
-	end
-end
-
-function _kron_chain_ops(op)
-	isempty(op) && error("ops is empty.")
-	nb = length(op)
-	m = op[1]
-	for i = 2:length(op)
-	    m = kron(m, op[i])
-	end
-	return m
-end
 
 function Base.kron(a::AbstractArray{Ta, N}, b::AbstractArray{Tb, N}) where {Ta<:Number, Tb<:Number, N}
     N == 0 && error("empty tensors.")

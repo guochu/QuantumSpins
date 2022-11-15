@@ -1,12 +1,21 @@
 module QuantumSpins
 
 using Logging: @warn
-using SparseArrays, Parameters, KrylovKit, TensorOperations, Statistics
+using Parameters, KrylovKit, TensorOperations, Statistics
 using LinearAlgebra: Diagonal, dot, norm, tr, mul!, normalize!, normalize
 import LinearAlgebra
 
+# verbosity level
+# verbosity = 0: absolute no message
+# verbosity = 1: only output important warnings
+# verbosity = 2: output important information such as iterative energy...
+# verbosity = 3: output verbose information such as MPS truncation..
+# verbosity = 4: output verbose information such as the current iterative status..
+
+
 # auxiliary
-export contract, Coefficient, value, scalar_type, is_constant, NoTruncation, TruncateCutoff, TruncateDim, MPSTruncation, TruncationScheme
+export contract, AbstractCoefficient, Coefficient, value, coeff, scalar_type, is_constant
+export NoTruncation, TruncateCutoff, TruncateDim, MPSTruncation, TruncationScheme
 export permute, tie, deparallelise, tsvd!, texp, tqr!, tlq!, entropy, renyi_entropy
 export dot, norm, tr, normalize!, normalize
 export AbstractMatrixFactorization, QRFact, SVDFact
@@ -17,16 +26,17 @@ export physical_dimensions, DensityOperatorMPS, DensityOperator, infinite_temper
 
 # mpo
 export AbstractMPO, MPO, prodmpo, randommpo, id, expectation, svdcompress!
-export MPOCompression, SVDCompression, Deparallelise, compress!
+export AbstractCompression, SVDCompression, Deparallelise, compress!
 
 # circuit
-export QuantumGate, QuantumCircuit, apply!, positions, shift, fuse_gates
+export QuantumGate, QuantumCircuit, apply!, positions, op, shift, fuse_gates
 
 # operators, easier interface for building quantum operators incrementally, and used for TEBD. Should it really be here in this package?
 export QTerm, QuantumOperator, matrix, add!, qterms, superoperator, add_unitary!, add_dissipation!
+export SuperTerm, SuperOperator, simplify
 
 # algorithms
-export trotter_propagator, environments, DMRG, TDVP, sweep!, ground_state!
+export trotter_propagator, environments, DMRG, TDVP, sweep!, ground_state!, ground_state
 # time evolve stepper
 export timeevo!, AbstractStepper, TEBDStepper, TDVPStepper, change_tspan_dt, TEBDCache, TDVPCache, timeevo_cache, correlation_2op_1t, exact_correlation_2op_1t
 export mixed_thermalize, thermal_state, itimeevo!
@@ -99,11 +109,15 @@ include("circuit/gate_fusion.jl")
 
 
 # operators
+include("operators/abstractdefs.jl")
 include("operators/qterm.jl")
+include("operators/superterm.jl")
+include("operators/abstractoperator.jl")
 include("operators/quantumoperator.jl")
 include("operators/superoperator.jl")
 include("operators/expecs.jl")
 include("operators/tompo.jl")
+include("operators/arithmetics.jl")
 
 # algorithms
 include("algorithms/tebd.jl")

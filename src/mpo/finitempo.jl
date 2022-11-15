@@ -56,7 +56,7 @@ Base.lastindex(h::MPO) = lastindex(raw_data(h))
 Base.firstindex(h::MPO) = firstindex(raw_data(h))
 
 Base.transpose(mpo::MPO) = MPO([permute(s, (1,4,3,2)) for s in raw_data(mpo)])
-Base.adjoint(mpo::MPO) =  MPO([conj(permute(s, (1,4,3,2))) for s in raw_data(mpo)])
+Base.adjoint(mpo::MPO) =  MPO([mpo_tensor_adjoint(s) for s in raw_data(mpo)])
 
 
 scalar_type(::Type{MPO{T}}) where {T} = T
@@ -103,7 +103,10 @@ end
 
 
 
+space_l(psi::MPO) = size(psi[1], 1)
+space_r(psi::MPO) = size(psi[end], 3)
+isstrict(psi::MPO) = (space_l(psi) == space_r(psi) == 1)
 
 
-
+mpo_tensor_adjoint(m::MPOTensor) = conj(permute(m, (1,4,3,2)))
 

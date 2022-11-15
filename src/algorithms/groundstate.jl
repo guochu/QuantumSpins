@@ -1,5 +1,10 @@
 abstract type DMRGAlgorithm end
 
+"""
+	struct DMRG <: DMRGAlgorithm 
+
+DMRG algorithm
+"""
 @with_kw struct DMRG <: DMRGAlgorithm 
 	D::Int = Defaults.D
 	maxiter::Int = Defaults.maxiter
@@ -26,10 +31,10 @@ function leftsweep!(m::ExpectationCache, alg::DMRG)
 	Energies = Float64[]
 	delta = 0.
 	for site in 1:length(mps)-1
-		(alg.verbosity > 2) && println("sweeping from left to right at site: $site.")
+		(alg.verbosity > 3) && println("sweeping from left to right at site: $site.")
 		eigvals, vecs = eigsolve(x->ac_prime(x, mpo[site], hstorage[site], hstorage[site+1]), mps[site], 1, :SR, Lanczos())
 		push!(Energies, eigvals[1])
-		(alg.verbosity > 2) && println("Energy after optimization on site $site is $(Energies[end]).")
+		(alg.verbosity > 1) && println("Energy after optimization on site $site is $(Energies[end]).")
 		# galerkin error
 		delta = max(delta, calc_galerkin(m, site) )
 		# prepare mps site tensor to be left canonical
@@ -49,10 +54,10 @@ function rightsweep!(m::ExpectationCache, alg::DMRG)
 	Energies = Float64[]
 	delta = 0.
 	for site in length(mps):-1:2
-		(alg.verbosity > 2) && println("sweeping from right to left at site: $site.")
+		(alg.verbosity > 3) && println("sweeping from right to left at site: $site.")
 		eigvals, vecs = eigsolve(x->ac_prime(x, mpo[site], hstorage[site], hstorage[site+1]), mps[site], 1, :SR, Lanczos())
 		push!(Energies, eigvals[1])
-		(alg.verbosity > 2) && println("Energy after optimization on site $site is $(Energies[end]).")		
+		(alg.verbosity > 1) && println("Energy after optimization on site $site is $(Energies[end]).")		
 		# galerkin error
 		delta = max(delta, calc_galerkin(m, site) )
 		# prepare mps site tensor to be right canonical
@@ -89,4 +94,12 @@ compute the ground state
 """
 ground_state!(state::MPS, h::MPO, alg::DMRGAlgorithm=DMRG()) = compute!(environments(h, state), alg)
 
-
+function ground_state(h::MPO, alg::DMRGAlgorithm=DMRG())
+	mps = randommps(scalar_type(h), physical_dimensions(h), D=alg.D)
+	canonicalize!(mps, normalize=true)
+	all_energies, delta = ground_state!(mps, g, alg)
+	if (alg.verbosity > 0) && (delta > alg.tol)
+		@warn "DMRG does not converge (required precision $(alg.tol), actual precision $delta)"
+	end	
+	return all_energies[end], state
+end
