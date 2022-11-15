@@ -1,3 +1,4 @@
+abstract type AbstractMPSAddCache end
 
 struct MPSIterativeAddCache{_MPSA, _MPSB, _H} <: AbstractMPSAddCache
     omps::_MPSA
@@ -26,8 +27,7 @@ function iterative_add(mpsxs::Vector{MPS{T, R}}, alg::OneSiteIterativeArith=OneS
     return m.omps, kvals[end]
 end
 
-sweep!(m::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[]) = iterative_error_2(
-    vcat(_leftsweep!(m, alg, workspace), _rightsweep!(m, alg, workspace)))
+sweep!(m::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[]) = vcat(_leftsweep!(m, alg, workspace), _rightsweep!(m, alg, workspace))
 
 
 compute!(m::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[]) = iterative_compute!(m, alg, workspace)

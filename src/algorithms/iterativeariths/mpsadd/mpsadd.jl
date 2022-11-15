@@ -1,5 +1,3 @@
-
-include("abstractadd.jl")
 include("svdadd.jl")
 include("iterativeadd.jl")
 include("stableadd.jl")

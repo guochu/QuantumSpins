@@ -1,3 +1,4 @@
+abstract type AbstractMPOMPOMultCache end
 
 
 struct MPOMPOIterativeMultCache{_MPO, _IMPO, _OMPO, _H} <: AbstractMPOMPOMultCache
@@ -9,8 +10,7 @@ end
 
 scalar_type(m::MPOMPOIterativeMultCache) = scalar_type(m.ompo)
 
-sweep!(m::MPOMPOIterativeMultCache, alg::AbstractMPSArith, workspace = scalar_type(m)[]) = iterative_error_2(
-    vcat(_leftsweep!(m, alg, workspace), _rightsweep!(m, alg, workspace)))
+sweep!(m::MPOMPOIterativeMultCache, alg::AbstractMPSArith, workspace = scalar_type(m)[]) = vcat(_leftsweep!(m, alg, workspace), _rightsweep!(m, alg, workspace))
 
 
 compute!(m::MPOMPOIterativeMultCache, alg::AbstractMPSArith, workspace = scalar_type(m)[]) = iterative_compute!(m, alg, workspace)

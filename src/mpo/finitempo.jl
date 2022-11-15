@@ -75,14 +75,16 @@ Base.copy(h::MPO) = MPO(copy(raw_data(h)))
 	i-1
 	o-2
 """
-r_RR(state::MPO{T}) where T = _eye(T, size(state[end], 3)) 
+r_RR(a::MPO, b::MPO) = _eye(promote_type(scalar_type(a), scalar_type(b)) , space_r(a), space_r(b)) 
+r_RR(a::MPO) = r_RR(a, a)
+
 """
 	l_LL, left boundary 2-tensor
 	o-1
 	i-2
 """
-l_LL(state::MPO{T}) where T = _eye(T, size(state[1], 1)) 
-
+l_LL(a::MPO, b::MPO) = _eye(promote_type(scalar_type(a), scalar_type(b)) , space_l(a), space_l(b)) 
+l_LL(a::MPO) = l_LL(a, a)
 
 bond_dimension(h::MPO, bond::Int) = begin
 	((bond >= 1) && (bond < length(h))) || throw(BoundsError())

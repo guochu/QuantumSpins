@@ -1,7 +1,5 @@
 
 
-get_trunc(x::SVDArith) = MPSTruncation(D=x.D, ϵ=x.ϵ)
-
 function svd_add(psiA::MPS, psiB::MPS, alg::SVDArith = SVDArith()) 
     (length(psiA) == length(psiB)) || throw(DimensionMismatch())
     (isempty(psiA)) && error("input mps is empty.")

@@ -105,3 +105,4 @@ default_mpo_compression() = Deparallelise(tol=DeparalleliseTol)
 compress!(h::MPO, alg::AbstractCompression) = _compress!(h, alg)
 compress!(h::MPO; alg::AbstractCompression=default_mpo_compression()) = compress!(h, alg)
 
+compress!(psi::AbstractMPS, alg::SVDCompression=SVDCompression(); normalize::Bool=false) = canonicalize!(psi, trunc=get_trunc(alg), normalize=normalize)

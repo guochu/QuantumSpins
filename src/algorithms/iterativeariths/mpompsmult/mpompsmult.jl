@@ -1,5 +1,3 @@
-
-include("abstractmult.jl")
 include("iterativemult.jl")
 include("svdmult.jl")
 include("stablemult.jl")

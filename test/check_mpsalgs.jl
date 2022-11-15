@@ -86,15 +86,56 @@ end
 
 # println("-----------test mpo mps iterative mult-----------------")
 
-@testset "mpo mps/mpo iterative mult" begin
-	@test test_iterative_mult(Float64, 7)
-	@test test_iterative_mult(ComplexF64, 6)
-	@test test_svd_mult(Float64, 5)
-	@test test_svd_mult(ComplexF64, 4)
-	@test test_stable_mult(Float64, 3)
-	@test test_stable_mult(ComplexF64, 8)
-	@test check_mpsadd(ComplexF64, 5)
-	@test check_mpsadd_2(Float64, 7)
-	@test check_mpompo_iterative_mult(ComplexF64, 6)
-	@test check_mpompo_iterative_mult(Float64, 7)
+# @testset "mpo mps/mpo iterative mult" begin
+# 	@test test_iterative_mult(Float64, 7)
+# 	@test test_iterative_mult(ComplexF64, 6)
+# 	@test test_svd_mult(Float64, 5)
+# 	@test test_svd_mult(ComplexF64, 4)
+# 	@test test_stable_mult(Float64, 3)
+# 	@test test_stable_mult(ComplexF64, 8)
+# 	@test check_mpsadd(ComplexF64, 5)
+# 	@test check_mpsadd_2(Float64, 7)
+# 	@test check_mpompo_iterative_mult(ComplexF64, 6)
+# 	@test check_mpompo_iterative_mult(Float64, 7)
+# end
+
+
+
+
+function check_mps_stable_compress(::Type{T}, L::Int) where T
+	d = 2
+
+	mps = randommps(T, L, d=d, D=3)
+
+	alg = StableArith(D=3, verbosity=1)
+
+	omps, err = compress(mps, alg)
+
+	return distance(mps, omps) / norm(mps) 
+end
+
+
+
+
+function check_mpo_stable_compress(::Type{T}, L::Int) where T
+	d = 2
+
+
+	mps = randommpo(T, L, d=d, D=3)
+
+	alg = StableArith(D=3, verbosity=1)
+
+	omps, err = compress(mps, alg)
+
+	return distance(mps, omps) / norm(mps) 
+end
+
+
+
+@testset "MPO/MPS iterative compression" begin
+	@test check_mps_stable_compress(Float64, 10) < 1.0e-5
+	@test check_mps_stable_compress(ComplexF64, 9) < 1.0e-5
+
+	@test check_mpo_stable_compress(Float64, 10) < 1.0e-5
+	@test check_mpo_stable_compress(ComplexF64, 9) < 1.0e-5
 end

@@ -3,20 +3,6 @@
 # two-site version is used for debug, which is much more expensive than one-site version
 
 
-struct OneSiteIterativeArith{F} <: AbstractMPSArith
-	D::Int 
-	maxiter::Int 
-	fact::F 
-	verbosity::Int 
-	tol::Float64 
-end
-
-OneSiteIterativeArith(;D::Int=100, maxiter::Int=5, fact::AbstractMatrixFactorization=SVDFact(), verbosity::Int=1, tol::Real=1.0e-8) = OneSiteIterativeArith(
-    D, maxiter, fact, verbosity, tol)
-IterativeArith(;kwargs...) = OneSiteIterativeArith(; kwargs...) 
-
-changeD(x::OneSiteIterativeArith; D::Int) = OneSiteIterativeArith(D=D, maxiter=x.maxiter, fact=x.fact, verbosity=x.verbosity, tol=x.tol)
-
 # @with_kw struct TwoSiteIterativeMult <: AbstractMPSArith
 # 	D::Int = 100
 # 	maxiter::Int = 5
@@ -27,6 +13,7 @@ changeD(x::OneSiteIterativeArith; D::Int) = OneSiteIterativeArith(D=D, maxiter=x
 
 # IterativeMult(;single_site::Bool=true, kwargs...) = single_site ? OneSiteIterativeArith(; kwargs...) : TwoSiteIterativeMult(; kwargs...)
 
+abstract type AbstractMPOMPSMultCache end
 
 struct MPOMPSIterativeMultCache{_MPO, _IMPS, _OMPS, _H} <: AbstractMPOMPSMultCache
 	mpo::_MPO
@@ -39,8 +26,7 @@ end
 
 scalar_type(m::MPOMPSIterativeMultCache) = scalar_type(m.omps)
 
-sweep!(m::MPOMPSIterativeMultCache, alg::AbstractMPSArith, workspace = scalar_type(m)[]) = iterative_error_2(
-    vcat(_leftsweep!(m, alg, workspace), _rightsweep!(m, alg, workspace)))
+sweep!(m::MPOMPSIterativeMultCache, alg::AbstractMPSArith, workspace = scalar_type(m)[]) = vcat(_leftsweep!(m, alg, workspace), _rightsweep!(m, alg, workspace))
 
 compute!(m::MPOMPSIterativeMultCache, alg::AbstractMPSArith, workspace = scalar_type(m)[]) = iterative_compute!(m, alg, workspace)
 
@@ -175,5 +161,3 @@ function init_hstorage_right(mpsB, mpo, mpsA)
 	end
 	return hstorage
 end
-
-iterative_error_2(m::AbstractVector) = std(m) / abs(mean(m))

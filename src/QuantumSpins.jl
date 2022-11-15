@@ -44,6 +44,7 @@ export mixed_thermalize, thermal_state, itimeevo!
 export AbstractMPSArith, OneSiteIterativeArith, IterativeArith, OneSiteStableArith, StableArith, SVDArith, iterative_mult, svd_mult, stable_mult, mpompsmult
 export iterative_add, svd_add, stable_add, mpsadd
 export mpompomult
+export compress, stable_compress, iterative_compress
 
 # # quantum circuit simulator
 # export ZERO, ONE, X, Y, Z, S, H, sqrtX, sqrtY, T, Rx, Ry, Rz, CONTROL, CZ, CNOT, CX, SWAP, iSWAP
@@ -129,9 +130,11 @@ include("algorithms/timeevo.jl")
 include("algorithms/thermalstate.jl")
 include("algorithms/twotimecorr.jl")
 # iterative mpo mps algorithms
-include("algorithms/mpompsmult/mpompsmult.jl")
-include("algorithms/mpsadd/mpsadd.jl")
-include("algorithms/mpompomult/mpompomult.jl")
+include("algorithms/iterativeariths/def.jl")
+include("algorithms/iterativeariths/mpompsmult/mpompsmult.jl")
+include("algorithms/iterativeariths/mpsadd/mpsadd.jl")
+include("algorithms/iterativeariths/mpompomult/mpompomult.jl")
+include("algorithms/iterativeariths/compression/compression.jl")
 
 # # quantum circuit simulator
 # include("quantumcircuitsimulator/interface/interface.jl")
