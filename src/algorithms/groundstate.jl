@@ -97,9 +97,9 @@ ground_state!(state::MPS, h::MPO, alg::DMRGAlgorithm=DMRG()) = compute!(environm
 function ground_state(h::MPO, alg::DMRGAlgorithm=DMRG())
 	mps = randommps(scalar_type(h), physical_dimensions(h), D=alg.D)
 	canonicalize!(mps, normalize=true)
-	all_energies, delta = ground_state!(mps, g, alg)
+	all_energies, delta = ground_state!(mps, h, alg)
 	if (alg.verbosity > 0) && (delta > alg.tol)
 		@warn "DMRG does not converge (required precision $(alg.tol), actual precision $delta)"
 	end	
-	return all_energies[end], state
+	return all_energies[end], mps
 end
