@@ -87,10 +87,10 @@ l_LL(a::MPO, b::MPO) = _eye(promote_type(scalar_type(a), scalar_type(b)) , space
 l_LL(a::MPO) = l_LL(a, a)
 
 bond_dimension(h::MPO, bond::Int) = begin
-	((bond >= 1) && (bond < length(h))) || throw(BoundsError())
+	((bond >= 1) && (bond <= length(h))) || throw(BoundsError())
 	return size(h[bond], 3)
 end 
-bond_dimensions(h::MPO) = [bond_dimension(h, i) for i in 1:length(h)-1]
+bond_dimensions(h::MPO) = [bond_dimension(h, i) for i in 1:length(h)]
 bond_dimension(h::MPO) = maximum(bond_dimensions(h))
 
 ophysical_dimensions(psi::MPO) = [size(item, 2) for item in raw_data(psi)]
