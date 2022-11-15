@@ -22,7 +22,7 @@ export AbstractMatrixFactorization, QRFact, SVDFact
 
 # mps
 export AbstractMPS, MPS, leftorth!, rightorth!, iscanonical, canonicalize!, bond_dimension, bond_dimensions, distance2, distance, increase_bond!
-export physical_dimensions, DensityOperatorMPS, DensityOperator, infinite_temperature_state, prodmps, randommps
+export physical_dimensions, DensityOperatorMPS, DensityOperator, infinite_temperature_state, prodmps, randommps, isstrict, space_l, space_r
 
 # mpo
 export AbstractMPO, MPO, prodmpo, randommpo, id, expectation
