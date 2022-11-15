@@ -16,7 +16,7 @@ function prodmpo(::Type{T}, physpaces::Vector{Int}, ms::AbstractDict{Int, M}) wh
 	end
 	return MPO(mpotensors)
 end
-prodmpo(::Type{T}, physpaces::Vector{Int}, ms::AbstractDict{Int, AbstractMatrix}) where T = prodmpo(
+prodmpo(::Type{T}, physpaces::Vector{Int}, ms::AbstractDict{Int, <:AbstractMatrix}) where T = prodmpo(
 	T, physpaces, Dict(k=>reshape(v, (1, size(v, 1), 1, size(v, 2)) ) for (k, v) in ms))
 
 function _site_ops_to_dict(pos::Vector{Int}, ms::Vector)
