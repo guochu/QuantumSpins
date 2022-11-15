@@ -53,6 +53,7 @@ abstract type AbstractCompression end
 
 
 @with_kw struct SVDCompression <: AbstractCompression
+	D::Int = Defaults.D
 	tol::Float64 = DeparalleliseTol
 	verbosity::Int = Defaults.verbosity
 end
@@ -62,7 +63,7 @@ end
 	verbosity::Int = Defaults.verbosity
 end
 
-get_trunc(alg::SVDCompression) = MPSTruncation(D=alg.D, ϵ=alg.tol, verbosity=alg.verbosity)
+get_trunc(alg::SVDCompression) = MPSTruncation(D=alg.D, ϵ=alg.tol)
 
 _compress!(h::MPO, alg::Deparallelise) = deparallelise!(h, tol=alg.tol, verbosity=alg.verbosity)
 

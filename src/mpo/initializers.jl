@@ -28,8 +28,8 @@ end
 prodmpo(::Type{T}, physpaces::Vector{Int}, pos::Vector{Int}, ms::Vector{M}) where {T <: Number, M <: Union{AbstractMatrix, MPOTensor}} = prodmpo(
 	T, physpaces, _site_ops_to_dict(pos, ms))
 
-prodmpo(physpaces::Vector{Int}, ms::AbstractDict{Int, M}) where {M <: Union{AbstractMatrix, MPOTensor}} = prodmps(eltype(M), physpaces, ms)
-prodmpo(physpaces::Vector{Int}, pos::Vector{Int}, ms::Vector{M}) where {M <: Union{AbstractMatrix, MPOTensor}} = prodmps(eltype(M), physpaces, pos, ms)
+prodmpo(physpaces::Vector{Int}, ms::AbstractDict{Int, M}) where {M <: Union{AbstractMatrix, MPOTensor}} = prodmpo(eltype(M), physpaces, ms)
+prodmpo(physpaces::Vector{Int}, pos::Vector{Int}, ms::Vector{M}) where {M <: Union{AbstractMatrix, MPOTensor}} = prodmpo(eltype(M), physpaces, pos, ms)
 
 
 """

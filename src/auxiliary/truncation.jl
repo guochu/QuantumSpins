@@ -14,13 +14,13 @@ struct TruncateCutoff <: TruncationScheme
 end
 TruncateCutoff(;ϵ::Real) = TruncateCutoff(convert(Float64, ϵ))
 
-# reverse at least Dm singular values
+# reserve at least add_back singular values
 struct MPSTruncation <: TruncationScheme
-	Dm::Int
+	add_back::Int
 	D::Int
 	ϵ::Float64
 end
-MPSTruncation(;D::Int, ϵ::Real, Dm::Int=1) = MPSTruncation(min(Dm, D), D, convert(Float64, ϵ))
+MPSTruncation(;D::Int, ϵ::Real, add_back::Int=1) = MPSTruncation(min(add_back, D), D, convert(Float64, ϵ))
 
 _truncate!(v::AbstractVector{<:Real}, trunc::NoTruncation, p::Real=2) = v, 0.
 
@@ -44,7 +44,7 @@ function _truncate!(v::AbstractVector{<:Real}, trunc::MPSTruncation, p::Real=2)
 	sca = norm(v, p)
 	dtrunc = findlast(Base.Fix2(>, sca * trunc.ϵ), v)
 	if isnothing(dtrunc)
-		dtrunc = trunc.Dm
+		dtrunc = trunc.add_back
 	end
 	v, err = _truncate!(v, TruncateDim(min(trunc.D, dtrunc)), p)
 	return v, err / sca

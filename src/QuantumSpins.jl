@@ -25,7 +25,7 @@ export AbstractMPS, MPS, leftorth!, rightorth!, iscanonical, canonicalize!, bond
 export physical_dimensions, DensityOperatorMPS, DensityOperator, infinite_temperature_state, prodmps, randommps
 
 # mpo
-export AbstractMPO, MPO, prodmpo, randommpo, id, expectation, svdcompress!
+export AbstractMPO, MPO, prodmpo, randommpo, id, expectation
 export AbstractCompression, SVDCompression, Deparallelise, compress!
 
 # circuit

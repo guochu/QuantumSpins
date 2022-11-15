@@ -53,7 +53,7 @@ isstrict(t::AbstractTerm) = (space_l(t) == space_r(t) == 1)
 
 bond_dimension(h::AbstractTerm, bond::Int) = begin
 	((bond >= 1) && (bond <= nterms(h))) || throw(BoundsError())
-	dim(size(op(h)[bond], 3))
+	size(op(h)[bond], 3)
 end 
 bond_dimensions(h::AbstractTerm) = [bond_dimension(h, i) for i in 1:nterms(h)]
 bond_dimension(h::AbstractTerm) = maximum(bond_dimensions(h))
