@@ -33,7 +33,7 @@ compute!(m::MPOMPSIterativeMultCache, alg::AbstractMPSArith, workspace = scalar_
 function iterative_mult(mpo::MPO, mps::MPS, alg::OneSiteIterativeArith = OneSiteIterativeArith())
 	mpsout = randommps(promote_type(scalar_type(mpo), scalar_type(mps)), ophysical_dimensions(mpo), D=alg.D)
 	# canonicalize!(mpsout, normalize=true)
-    rightorth!(mpsout, alg=QRFact())
+    rightorth!(mpsout, alg=SVDFact(normalize=true))
 	m = MPOMPSIterativeMultCache(mpo, mps, mpsout, init_hstorage_right(mpsout, mpo, mps))
 	kvals = compute!(m, alg)
 	return m.omps, kvals[end]
