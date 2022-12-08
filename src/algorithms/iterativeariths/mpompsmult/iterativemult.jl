@@ -33,7 +33,7 @@ compute!(m::MPOMPSIterativeMultCache, alg::AbstractMPSArith, workspace = scalar_
 function iterative_mult(mpo::MPO, mps::MPS, alg::OneSiteIterativeArith = OneSiteIterativeArith())
 	mpsout = randommps(promote_type(scalar_type(mpo), scalar_type(mps)), ophysical_dimensions(mpo), D=alg.D)
 	# canonicalize!(mpsout, normalize=true)
-    rightorth!(mpsout, alg=SVDFact(normalize=true))
+    rightorth!(mpsout, alg=QRFact(normalize=true))
 	m = MPOMPSIterativeMultCache(mpo, mps, mpsout, init_hstorage_right(mpsout, mpo, mps))
 	kvals = compute!(m, alg)
 	return m.omps, kvals[end]
@@ -66,22 +66,14 @@ function _rightsweep!(m::MPOMPSIterativeMultCache, alg::OneSiteIterativeArith, w
     L = length(mpo)
     kvals = Float64[]
     r = zeros(scalar_type(mpsB), 0, 0)
-    isa(alg.fact, SVDFact) && maybe_init_boundary_s!(mpsB)
+
     for site in L:-1:2
         (alg.verbosity > 3) && println("Sweeping from right to left at bond: $site.")
         mpsj = reduceD_single_site(mpsA[site], mpo[site], Cstorage[site], Cstorage[site+1])
         push!(kvals, norm(mpsj))
         (alg.verbosity > 1) && println("residual is $(kvals[end])...")
-        if isa(alg.fact, QRFact)
-        	r, mpsB[site] = tlq!(mpsj, (1,), (2,3), workspace)
-        elseif isa(alg.fact, SVDFact)
-            u, s, v, err = tsvd!(mpsj, (1,), (2,3), workspace, trunc=alg.fact.trunc)
-            mpsB[site] = v
-            r = u * Diagonal(s)
-            mpsB.s[site] = s
-        else
-            error("unsupported factorization method $(typeof(alg.fact))")
-        end
+
+        r, mpsB[site] = tlq!(mpsj, (1,), (2,3), workspace)
         Cstorage[site] = updateright(Cstorage[site+1], mpsB[site], mpo[site], mpsA[site])
     end
     # println("norm of r is $(norm(r))")

@@ -1,9 +1,8 @@
 abstract type AbstractMPSArith end
 
-@with_kw struct OneSiteIterativeArith{F<:AbstractMatrixFactorization} <: AbstractMPSArith
+@with_kw struct OneSiteIterativeArith <: AbstractMPSArith
 	D::Int = 100 
 	maxiter::Int = 5
-	fact::F = SVDFact()
 	verbosity::Int = 1
 	tol::Float64 = 1.0e-8
 end
@@ -11,7 +10,7 @@ end
 IterativeArith(;kwargs...) = OneSiteIterativeArith(; kwargs...) 
 
 
-changeD(x::OneSiteIterativeArith; D::Int) = OneSiteIterativeArith(D=D, maxiter=x.maxiter, fact=x.fact, verbosity=x.verbosity, tol=x.tol)
+changeD(x::OneSiteIterativeArith; D::Int) = OneSiteIterativeArith(D=D, maxiter=x.maxiter, verbosity=x.verbosity, tol=x.tol)
 
 
 @with_kw struct SVDArith <: AbstractMPSArith
@@ -39,8 +38,7 @@ changeD(x::OneSiteStableArith; D::Int) = OneSiteStableArith(D=D, maxiter=x.maxit
 
 
 get_svd_alg(x::OneSiteStableArith) = SVDArith(D=x.D, ϵ=x.ϵ, verbosity=x.verbosity)
-get_iterative_alg(x::OneSiteStableArith) = OneSiteIterativeArith(
-	D=x.D, fact=SVDFact(trunc=MPSTruncation(D=x.D, ϵ=x.ϵ)), maxiter=x.maxiter, tol=x.tol, verbosity=x.verbosity)
+get_iterative_alg(x::OneSiteStableArith) = OneSiteIterativeArith(D=x.D, maxiter=x.maxiter, tol=x.tol, verbosity=x.verbosity)
 
 
 function iterative_compute!(m, alg, args...)

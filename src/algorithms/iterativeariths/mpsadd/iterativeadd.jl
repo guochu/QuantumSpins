@@ -61,7 +61,7 @@ function _rightsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeArith, works
 
     kvals = Float64[]
     l = zeros(scalar_type(mpsy), 0, 0)
-    isa(alg.fact, SVDFact) && maybe_init_boundary_s!(mpsy)
+
     for site in L:-1:2
         (alg.verbosity > 3) && println("Sweeping from right to left at bond: $site.")
         mpsj = _compute_one_site_mpsj(mpsxs, cstorages, site)
@@ -69,16 +69,8 @@ function _rightsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeArith, works
         (alg.verbosity > 1) && println("residual is $(kvals[end])...")
         # l, mpsy[site] = tlq!(mpsj, (1,), (2,3), workspace)
 
-        if isa(alg.fact, QRFact)
-            l, mpsy[site] = tlq!(mpsj, (1,), (2,3), workspace)
-        elseif isa(alg.fact, SVDFact)
-            u, s, v, err = tsvd!(mpsj, (1,), (2,3), workspace, trunc=alg.fact.trunc)
-            mpsy[site] = v
-            l = u * Diagonal(s)
-            mpsy.s[site] = s
-        else
-            error("unsupported factorization method $(typeof(alg.fact))")
-        end
+
+        l, mpsy[site] = tlq!(mpsj, (1,), (2,3), workspace)
 
         for n in 1:N
             cstorages[n][site] = updateright(cstorages[n][site+1], mpsy[site], mpsxs[n][site])

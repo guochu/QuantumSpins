@@ -19,7 +19,7 @@ function iterative_mult(mpo::MPO, mps::MPO, alg::OneSiteIterativeArith = OneSite
     T = promote_type(scalar_type(mpo), scalar_type(mps))
     mpsout = randommpo(T, ophysical_dimensions(mpo), iphysical_dimensions(mps), D=alg.D)
     # canonicalize!(mpsout, normalize=true)
-    rightorth!(mpsout, alg=QRFact())
+    rightorth!(mpsout, alg=QRFact(normalize=true))
     m = MPOMPOIterativeMultCache(mpo, mps, mpsout, init_hstorage_right(mpsout, mpo, mps))
     kvals = compute!(m, alg)
     return m.ompo, kvals[end]
@@ -58,15 +58,9 @@ function _rightsweep!(m::MPOMPOIterativeMultCache, alg::OneSiteIterativeArith, w
         mpsj = reduceH_single_site(mpoA[site], mpo[site], Cstorage[site], Cstorage[site+1])
         push!(kvals, norm(mpsj))
         (alg.verbosity > 1) && println("residual is $(kvals[end])...")
-        if isa(alg.fact, QRFact)
-        	r, mpoB[site] = tlq!(mpsj, (1,), (2,3,4), workspace)
-        elseif isa(alg.fact, SVDFact)
-            u, s, v, err = tsvd!(mpsj, (1,), (2,3,4), workspace, trunc=alg.fact.trunc)
-            mpoB[site] = v
-            r = u * Diagonal(s)
-        else
-            error("unsupported factorization method $(typeof(alg.fact))")
-        end
+
+        r, mpoB[site] = tlq!(mpsj, (1,), (2,3,4), workspace)
+
         Cstorage[site] = updateright(Cstorage[site+1], mpoB[site], mpo[site], mpoA[site])
     end
     # println("norm of r is $(norm(r))")

@@ -34,15 +34,7 @@ function rightsweep!(m::MPOOverlapCache, alg::OneSiteIterativeArith, workspace =
 		push!(kvals, norm(mpsj))
 		(alg.verbosity > 1) && println("residual after optimization on site $site is $(kvals[end])")
 
-        if isa(alg.fact, QRFact)
-        	r, omps[site] = tlq!(mpsj, (1,), (2,3,4), workspace)
-        elseif isa(alg.fact, SVDFact)
-            u, s, v, err = tsvd!(mpsj, (1,), (2,3,4), workspace, trunc=alg.fact.trunc)
-            omps[site] = v
-            r = u * Diagonal(s)
-        else
-            error("unsupported factorization method $(typeof(alg.fact))")
-        end
+        r, omps[site] = tlq!(mpsj, (1,), (2,3,4), workspace)
         Cstorage[site] = updateright(Cstorage[site+1], omps[site], imps[site])
 	end
 	omps[1] = @tensor tmp[1,2,5,4] := omps[1][1,2,3,4] * r[3,5]
