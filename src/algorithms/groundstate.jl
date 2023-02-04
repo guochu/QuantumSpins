@@ -30,15 +30,18 @@ function leftsweep!(m::ExpectationCache, alg::DMRG)
 	hstorage = m.env
 	Energies = Float64[]
 	delta = 0.
+	eig_maxiter = 8
+	eig_tol = alg.tol / 10
 	for site in 1:length(mps)-1
 		(alg.verbosity > 3) && println("sweeping from left to right at site: $site.")
-		eigvals, vecs = eigsolve(x->ac_prime(x, mpo[site], hstorage[site], hstorage[site+1]), mps[site], 1, :SR, Lanczos())
-		push!(Energies, eigvals[1])
+		# eigvals, vecs = eigsolve(x->ac_prime(x, mpo[site], hstorage[site], hstorage[site+1]), mps[site], 1, :SR, Lanczos())
+		_eigval, _eigvec, info = simple_lanczos_solver(x->ac_prime(x, mpo[site], hstorage[site], hstorage[site+1]), mps[site], "SR", eig_maxiter, eig_tol, verbosity=0)
+		push!(Energies, _eigval)
 		(alg.verbosity > 1) && println("Energy after optimization on site $site is $(Energies[end]).")
 		# galerkin error
 		delta = max(delta, calc_galerkin(m, site) )
 		# prepare mps site tensor to be left canonical
-		Q, R = tqr!(vecs[1], (1,2), (3,))
+		Q, R = tqr!(_eigvec, (1,2), (3,))
 		mps[site] = Q
 		mps[site+1] = @tensor tmp[-1 -2; -3] := R[-1, 1] * mps[site+1][1, -2, -3]
 		# hstorage[site+1] = updateleft(hstorage[site], mps[site], mpo[site], mps[site])
@@ -53,15 +56,18 @@ function rightsweep!(m::ExpectationCache, alg::DMRG)
 	hstorage = m.env
 	Energies = Float64[]
 	delta = 0.
+	eig_maxiter = 8
+	eig_tol = alg.tol / 10
 	for site in length(mps):-1:2
 		(alg.verbosity > 3) && println("sweeping from right to left at site: $site.")
-		eigvals, vecs = eigsolve(x->ac_prime(x, mpo[site], hstorage[site], hstorage[site+1]), mps[site], 1, :SR, Lanczos())
-		push!(Energies, eigvals[1])
+		# eigvals, vecs = eigsolve(x->ac_prime(x, mpo[site], hstorage[site], hstorage[site+1]), mps[site], 1, :SR, Lanczos())
+		_eigval, _eigvec, info = simple_lanczos_solver(x->ac_prime(x, mpo[site], hstorage[site], hstorage[site+1]), mps[site], "SR", eig_maxiter, eig_tol, verbosity=0)
+		push!(Energies, _eigval)
 		(alg.verbosity > 1) && println("Energy after optimization on site $site is $(Energies[end]).")		
 		# galerkin error
 		delta = max(delta, calc_galerkin(m, site) )
 		# prepare mps site tensor to be right canonical
-		L, Q = tlq!(vecs[1], (1,), (2,3))
+		L, Q = tlq!(_eigvec, (1,), (2,3))
 		mps[site] = permute(Q, (1,2), (3,))
 		mps[site-1] = @tensor tmp[-1 -2; -3] := mps[site-1][-1, -2, 1] * L[1, -3]
 		# hstorage[site] = updateright(hstorage[site+1], mps[site], mpo[site], mps[site])

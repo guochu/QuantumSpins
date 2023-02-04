@@ -2,7 +2,7 @@ module QuantumSpins
 
 using Logging: @warn
 using Parameters, KrylovKit, TensorOperations, Statistics
-using LinearAlgebra: Diagonal, dot, norm, tr, mul!, normalize!, normalize
+using LinearAlgebra: Diagonal, dot, norm, tr, mul!, normalize!, normalize, Symmetric, eigen
 import LinearAlgebra
 
 # verbosity level
@@ -75,6 +75,7 @@ include("auxiliary/truncation.jl")
 include("auxiliary/deparallelise.jl")
 include("auxiliary/tensorops.jl")
 include("auxiliary/factorize.jl")
+include("auxiliary/simplelanczos.jl")
 
 # mps
 include("mps/abstractdefs.jl")
