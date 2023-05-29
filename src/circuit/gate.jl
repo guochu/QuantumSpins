@@ -1,5 +1,5 @@
 
-scalar_type(x::AbstractQuantumGate) = scalar_type(typeof(x))
+Base.eltype(x::AbstractQuantumGate) = eltype(typeof(x))
 
 
 function _get_norm_order(key::NTuple{N, Int}, p) where N
@@ -32,7 +32,7 @@ QuantumGate(positions::Int, m::AbstractMatrix) = QuantumGate((positions,), m)
 
 positions(x::AbstractQuantumGate) = x.positions
 op(x::QuantumGate) = x.op
-scalar_type(::Type{QuantumGate{N, M}}) where {N, M} = eltype(M)
+Base.eltype(::Type{QuantumGate{N, M}}) where {N, M} = eltype(M)
 shift(x::QuantumGate, i::Int) = QuantumGate(_shift(positions(x), i), op(x))
 
 
@@ -48,7 +48,7 @@ end
 
 positions(x::AdjointQuantumGate) = positions(x.parent)
 op(s::AdjointQuantumGate{N, G}) where {N, G} = permute(conj(op(s.parent)), _get_trans_perm(N))
-scalar_type(::Type{AdjointQuantumGate{N, G}}) where {N, G} = scalar_type(G)
+Base.eltype(::Type{AdjointQuantumGate{N, G}}) where {N, G} = eltype(G)
 shift(x::AdjointQuantumGate) = AdjointQuantumGate(shift(x.parent))
 
 Base.adjoint(x::AbstractQuantumGate) = AdjointQuantumGate(x)

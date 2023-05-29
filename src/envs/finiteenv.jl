@@ -17,7 +17,7 @@ function init_hstorage!(hstorage::Vector, mpo::MPO, mps::MPS, center::Int)
 end
 
 function init_hstorage(mpo::MPO, mps::MPS, center::Int)
-	T = promote_type(scalar_type(mpo), scalar_type(mps))
+	T = promote_type(eltype(mpo), eltype(mps))
 	hstorage = Vector{Array{T, 3}}(undef, length(mps)+1)
 	return init_hstorage!(hstorage, mpo, mps, center)
 end
@@ -54,7 +54,7 @@ end
 function increase_bond!(m::ExpectationCache; D::Int)
 	if bond_dimension(m.state) < D
 		increase_bond!(m.state, D=D)
-		canonicalize!(m.state, normalize=false)
+		canonicalize!(m.state, alg=Orthogonalize(normalize=false))
 		init_hstorage!(m.env, m.h, m.state, 1)
 	end
 end

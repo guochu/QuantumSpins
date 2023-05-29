@@ -1,52 +1,52 @@
 # mpo deparallelisation
 
 
-function deparallelise_left!(x::AbstractMPO; tol::Real=DeparalleliseTol, verbosity::Int=0)
+function leftdeparallel!(x::AbstractMPO; tol::Real=DeparalleliseTol, verbosity::Int=0)
 	for i = 1:(length(x)-1)
-		(verbosity > 3) && println("deparallelisation sweep from left to right on site: $i.")
-		M, Tm = left_deparallelise(x[i], (1,2,4), (3,); tol=tol, verbosity=verbosity)
+		(verbosity > 3) && println("deparallelisation sweep from left to right on site: $i")
+		M, Tm = leftdeparallel(x[i], (1,2,4), (3,); tol=tol, verbosity=verbosity)
 		if length(M) > 0
 		    x[i] = permute(M, (1,2), (4,3))
 		    @tensor tmp[-1 -2; -3 -4] := Tm[-1, 1] * x[i+1][1,-2,-3,-4]
 		    x[i+1] = tmp
 		else
-			(verbosity >= 1) && println("mpo becomes empty after deparallelisation left.")
+			(verbosity >= 1) && println("mpo becomes empty after deparallelisation left")
 			return nothing
 		end
 	end
 	return x
 end
 
-function deparallelise_right!(x::AbstractMPO; tol::Real=DeparalleliseTol, verbosity::Int=0)
+function rightdeparallel!(x::AbstractMPO; tol::Real=DeparalleliseTol, verbosity::Int=0)
 	for i = length(x):-1:2
-	    (verbosity > 3) && println("deparallelisation sweep from right to left on site: $i.")
-	    Tm, M = right_deparallelise(x[i], (1,), (2,3,4); tol=tol, verbosity=verbosity)
+	    (verbosity > 3) && println("deparallelisation sweep from right to left on site: $i")
+	    Tm, M = rightdeparallel(x[i], (1,), (2,3,4); tol=tol, verbosity=verbosity)
 	    if length(M) > 0
 	    	# ii = isomorphism()
 	        x[i] = permute(M, (1,2), (3,4))
 	        @tensor tmp[-1 -2; -3 -4] := x[i-1][-1,-2,1,-4] * Tm[1,-3]
 	        x[i-1] = tmp
 	    else
-	    	(verbosity >= 1) && println("mpo becomes empty after deparallelisation right.")
+	    	(verbosity >= 1) && println("mpo becomes empty after deparallelisation right")
 	    	return nothing
 	    end
 	end
 	return x
 end
 
-function deparallelise!(x::AbstractMPO; kwargs...)
-	r = deparallelise_left!(x; kwargs...)
+function deparallel!(x::AbstractMPO; kwargs...)
+	r = leftdeparallel!(x; kwargs...)
 	if !isnothing(r)
-		r = deparallelise_right!(x; kwargs...)
+		r = rightdeparallel!(x; kwargs...)
 	end
 	return r
 end
 
 """
-	deparallelise(x::AbstractMPO)
+	deparallel(x::AbstractMPO)
 	reduce the bond dimension of mpo using deparallelisation
 """
-deparallelise(x::AbstractMPO; kwargs...) = deparallelise!(copy(x); kwargs...)
+deparallel(x::AbstractMPO; kwargs...) = deparallel!(copy(x); kwargs...)
 
 
 abstract type AbstractCompression end
@@ -65,7 +65,7 @@ end
 
 get_trunc(alg::SVDCompression) = MPSTruncation(D=alg.D, ϵ=alg.tol)
 
-_compress!(h::MPO, alg::Deparallelise) = deparallelise!(h, tol=alg.tol, verbosity=alg.verbosity)
+_compress!(h::MPO, alg::Deparallelise) = deparallel!(h, tol=alg.tol, verbosity=alg.verbosity)
 
 function _compress!(h::MPO, alg::SVDCompression)
 	L = length(h)
@@ -105,4 +105,3 @@ default_mpo_compression() = Deparallelise(tol=DeparalleliseTol)
 compress!(h::MPO, alg::AbstractCompression) = _compress!(h, alg)
 compress!(h::MPO; alg::AbstractCompression=default_mpo_compression()) = compress!(h, alg)
 
-compress!(psi::AbstractMPS, alg::SVDCompression=SVDCompression(); normalize::Bool=false) = canonicalize!(psi, trunc=get_trunc(alg), normalize=normalize)

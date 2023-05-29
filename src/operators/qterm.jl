@@ -17,10 +17,7 @@ end
 
 function QTerm(pos::Vector{Int}, m::Vector{<:MPOTensor}, v::AllowedCoefficient)
 	v = Coefficient(v)
-	T = scalar_type(v)
-	for item in m
-		T = promote_type(T, eltype(item))
-	end
+	T = promote_type(eltype(v), compute_eltype(m))
 	return QTerm{T}(pos, m, v)
 end 
 QTerm(pos::Vector{Int}, m::Vector{<:AbstractMatrix}, v::AllowedCoefficient) = QTerm(
@@ -37,14 +34,16 @@ end
 (x::QTerm)(t::Number) = QTerm(positions(x), op(x), coeff(x)(t))
 
 
+Base.eltype(::Type{QTerm{T}}) where T = T
 Base.copy(x::QTerm) = QTerm(copy(positions(x)), copy(op(x)), copy(coeff(x)))
 Base.adjoint(x::QTerm) = QTerm(copy(positions(x)), mpo_tensor_adjoint.(op(x)), conj(coeff(x)))
+
 
 Base.:*(s::QTerm, m::AllowedCoefficient) = QTerm(positions(s), op(s), coeff(s) * m)
 
 shift(m::QTerm, i::Int) = QTerm(positions(m) .+ i, op(m), coeff(m))
 
-id(x::QTerm) = QTerm(positions(x), [_eye(scalar_type(x), d) for d in physical_dimensions(x)], coeff=1.)
+id(x::QTerm) = QTerm(positions(x), [_eye(eltype(x), d) for d in physical_dimensions(x)], coeff=1.)
 
 
 """
@@ -58,7 +57,7 @@ function Base.:*(x::QTerm, y::QTerm)
 end
 
 function _coerce_qterms(x::QTerm, y::QTerm)
-	T = promote_type(scalar_type(x), scalar_type(y))
+	T = promote_type(eltype(x), eltype(y))
     opx = op(x)
     opy = op(y)
     pos = positions(x)

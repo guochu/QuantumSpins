@@ -18,7 +18,7 @@ end
 """
 	struct DensityOperatorMPS{A<:MPSTensor, B<:MPSBondTensor}
 """
-struct DensityOperatorMPS{T<:Number, R<:Real} <: AbstractDensityOperatorMPS
+struct DensityOperatorMPS{T<:Number, R<:Real} <: AbstractMixedMPS
 	data::MPS{T, R}
 	fusers::Vector{Array{T, 3}}
 	I::MPS{T, R}
@@ -33,8 +33,6 @@ function Base.getproperty(psi::DensityOperatorMPS{T, R}, s::Symbol) where {T, R}
 end
 
 Base.eltype(::Type{DensityOperatorMPS{A, B}}) where {A, B} = A
-scalar_type(::Type{DensityOperatorMPS{A, B}}) where {A, B} = eltype(A)
-
 
 Base.copy(psi::DensityOperatorMPS) = DensityOperatorMPS(copy(psi.data), psi.fusers, psi.I)
 Base.isapprox(x::DensityOperatorMPS, y::DensityOperatorMPS; kwargs...) = isapprox(x.data, y.data; kwargs...)
@@ -47,6 +45,9 @@ increase_bond!(psi::DensityOperatorMPS; kwargs...) = begin
 	return psi
 end
 
-canonicalize!(psi::DensityOperatorMPS; kwargs...) = canonicalize!(psi.data; kwargs...)
+function canonicalize!(psi::DensityOperatorMPS; kwargs...)
+	canonicalize!(psi.data; kwargs...)
+	return psi
+end 
 default_fusers(::Type{T}, ds::Vector{Int}) where {T<:Number} = [reshape(_eye(T, d*d), d, d, d*d) for d in ds]
 

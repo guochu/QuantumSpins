@@ -33,11 +33,11 @@ function leftsweep!(m::ExpectationCache, alg::DMRG)
 	eig_maxiter = 8
 	eig_tol = alg.tol / 10
 	for site in 1:length(mps)-1
-		(alg.verbosity > 3) && println("sweeping from left to right at site: $site.")
+		(alg.verbosity > 3) && println("sweeping from left to right at site: $site")
 		# eigvals, vecs = eigsolve(x->ac_prime(x, mpo[site], hstorage[site], hstorage[site+1]), mps[site], 1, :SR, Lanczos())
 		_eigval, _eigvec, info = simple_lanczos_solver(x->ac_prime(x, mpo[site], hstorage[site], hstorage[site+1]), mps[site], "SR", eig_maxiter, eig_tol, verbosity=0)
 		push!(Energies, _eigval)
-		(alg.verbosity > 1) && println("Energy after optimization on site $site is $(Energies[end]).")
+		(alg.verbosity > 1) && println("Energy after optimization on site $site is $(Energies[end])")
 		# galerkin error
 		delta = max(delta, calc_galerkin(m, site) )
 		# prepare mps site tensor to be left canonical
@@ -59,11 +59,11 @@ function rightsweep!(m::ExpectationCache, alg::DMRG)
 	eig_maxiter = 8
 	eig_tol = alg.tol / 10
 	for site in length(mps):-1:2
-		(alg.verbosity > 3) && println("sweeping from right to left at site: $site.")
+		(alg.verbosity > 3) && println("sweeping from right to left at site: $site")
 		# eigvals, vecs = eigsolve(x->ac_prime(x, mpo[site], hstorage[site], hstorage[site+1]), mps[site], 1, :SR, Lanczos())
 		_eigval, _eigvec, info = simple_lanczos_solver(x->ac_prime(x, mpo[site], hstorage[site], hstorage[site+1]), mps[site], "SR", eig_maxiter, eig_tol, verbosity=0)
 		push!(Energies, _eigval)
-		(alg.verbosity > 1) && println("Energy after optimization on site $site is $(Energies[end]).")		
+		(alg.verbosity > 1) && println("Energy after optimization on site $site is $(Energies[end])")		
 		# galerkin error
 		delta = max(delta, calc_galerkin(m, site) )
 		# prepare mps site tensor to be right canonical
@@ -101,8 +101,8 @@ compute the ground state
 ground_state!(state::MPS, h::MPO, alg::DMRGAlgorithm=DMRG()) = compute!(environments(h, state), alg)
 
 function ground_state(h::MPO, alg::DMRGAlgorithm=DMRG())
-	mps = randommps(scalar_type(h), physical_dimensions(h), D=alg.D)
-	canonicalize!(mps, normalize=true)
+	mps = randommps(eltype(h), physical_dimensions(h), D=alg.D)
+	canonicalize!(mps, alg = Orthogonalize(SVD(), normalize=true))
 	all_energies, delta = ground_state!(mps, h, alg)
 	if (alg.verbosity > 0) && (delta > alg.tol)
 		@warn "DMRG does not converge (required precision $(alg.tol), actual precision $delta)"

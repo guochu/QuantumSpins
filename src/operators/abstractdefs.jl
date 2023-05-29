@@ -24,14 +24,8 @@ Base.:+(s::AbstractTerm) = s
 Base.:-(s::AbstractTerm) = (-1) * s 
 
 nterms(s::AbstractTerm) = length(op(s))
-is_constant(s::AbstractTerm) = is_constant(coeff(s))
-function scalar_type(x::AbstractTerm)
-	T = scalar_type(coeff(x))
-	for m in op(x)
-		T = promote_type(T, eltype(m))
-	end
-	return T
-end 
+isconstant(s::AbstractTerm) = isconstant(coeff(s))
+Base.eltype(x::AbstractTerm) = eltype(typeof(x))
 
 function _interaction_range(x::Union{Vector{Int}, Tuple})::Int
 	(length(x) == 0) && return 0
@@ -40,11 +34,11 @@ function _interaction_range(x::Union{Vector{Int}, Tuple})::Int
 end
 interaction_range(x::AbstractTerm) = _interaction_range(positions(x))
 
-function is_zero(x::AbstractTerm) 
-	is_zero(coeff(x)) && return true
+function Base.iszero(x::AbstractTerm) 
+	iszero(coeff(x)) && return true
 	isempty(x) && return true
 	for item in op(x)
-	    is_zero(item) && return true
+	    iszero(item) && return true
 	end
 	return false
 end

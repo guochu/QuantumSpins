@@ -3,7 +3,7 @@ const MPOOverlapCache{_M, _H} = OverlapCache{_M, _M, _H} where {_M <: MPO}
 
 
 # A is assumed to be the input and B the output
-function leftsweep!(m::MPOOverlapCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[])
+function leftsweep!(m::MPOOverlapCache, alg::OneSiteIterativeArith, workspace = eltype(m)[])
 	omps = bra(m)
 	imps = ket(m)
 	Cstorage = m.cstorage
@@ -21,13 +21,13 @@ function leftsweep!(m::MPOOverlapCache, alg::OneSiteIterativeArith, workspace = 
 	return kvals
 end
 
-function rightsweep!(m::MPOOverlapCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[])
+function rightsweep!(m::MPOOverlapCache, alg::OneSiteIterativeArith, workspace = eltype(m)[])
 	omps = bra(m)
 	imps = ket(m)
 	Cstorage = m.cstorage
 	kvals = Float64[]
 	L = length(m)
-	r = zeros(scalar_type(omps), 0, 0)
+	r = zeros(eltype(omps), 0, 0)
 	for site in L:-1:2
 		(alg.verbosity > 3) && println("sweeping from right to left at site: $site.")
 		mpsj = reduceD_single_site(imps[site], Cstorage[site], Cstorage[site+1])

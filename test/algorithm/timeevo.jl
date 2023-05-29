@@ -70,7 +70,7 @@ function check_open_timeevo()
 
 	lindblad1 = boundary_driven_xxz(L, J=J, Jzz=Jzz, hz=hz, nl=nl, Λl=gammal, nr=nr, Λr=gammar, Λp=gammaphase)
 
-	observers = [superoperator(QTerm(i=>p["z"]), id(QTerm(i=>p["z"]))) for i in 1:L]
+	observers = [superterm(QTerm(i=>p["z"]), id(QTerm(i=>p["z"]))) for i in 1:L]
 
 	init_state = [0 for i in 1:L]
 	init_state[2:2:L] .= 1

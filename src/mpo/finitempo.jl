@@ -1,10 +1,10 @@
 
 function _check_mpo_space(mpotensors::Vector)
 	for i in 1:length(mpotensors)-1
-		(size(mpotensors[i], 3) == size(mpotensors[i+1], 1)) || throw(DimensionMismatch())
+		(space_r(mpotensors[i]) == space_l(mpotensors[i+1])) || throw(DimensionMismatch())
 	end
 	# boundaries should be dimension 
-	(size(mpotensors[1], 1) == 1) || throw(DimensionMismatch())
+	(space_l(mpotensors[1]) == 1) || throw(DimensionMismatch())
 	return true
 end
 
@@ -39,14 +39,13 @@ function MPO{T}(mpotensors::Vector) where {T<:Number}
 	_check_mpo_space(mpotensors)
 	return new{T}(convert(Vector{Array{T, 4}}, mpotensors))
 end
-
 end
 
 MPO(mpotensors::Vector{<:MPOTensor{T}}) where {T <: Number} = MPO{T}(mpotensors)
 
 raw_data(h::MPO) = h.data
 
-Base.eltype(::Type{MPO{T}}) where {T} = Array{T, 4}
+Base.eltype(::Type{MPO{T}}) where {T} = T
 Base.eltype(h::MPO) = eltype(typeof(h))
 Base.length(h::MPO) = length(raw_data(h))
 Base.isempty(h::MPO) = isempty(raw_data(h))
@@ -57,10 +56,6 @@ Base.firstindex(h::MPO) = firstindex(raw_data(h))
 
 Base.transpose(mpo::MPO) = MPO([permute(s, (1,4,3,2)) for s in raw_data(mpo)])
 Base.adjoint(mpo::MPO) =  MPO([mpo_tensor_adjoint(s) for s in raw_data(mpo)])
-
-
-scalar_type(::Type{MPO{T}}) where {T} = T
-scalar_type(h::MPO) = scalar_type(typeof(h))
 
 
 function Base.setindex!(h::MPO, v, i::Int)
@@ -75,7 +70,7 @@ Base.copy(h::MPO) = MPO(copy(raw_data(h)))
 	i-1
 	o-2
 """
-r_RR(a::MPO, b::MPO) = _eye(promote_type(scalar_type(a), scalar_type(b)) , space_r(a), space_r(b)) 
+r_RR(a::MPO, b::MPO) = _eye(promote_type(eltype(a), eltype(b)) , space_r(a), space_r(b)) 
 r_RR(a::MPO) = r_RR(a, a)
 
 """
@@ -83,12 +78,12 @@ r_RR(a::MPO) = r_RR(a, a)
 	o-1
 	i-2
 """
-l_LL(a::MPO, b::MPO) = _eye(promote_type(scalar_type(a), scalar_type(b)) , space_l(a), space_l(b)) 
+l_LL(a::MPO, b::MPO) = _eye(promote_type(eltype(a), eltype(b)) , space_l(a), space_l(b)) 
 l_LL(a::MPO) = l_LL(a, a)
 
 bond_dimension(h::MPO, bond::Int) = begin
 	((bond >= 1) && (bond <= length(h))) || throw(BoundsError())
-	return size(h[bond], 3)
+	return space_r(h[bond])
 end 
 bond_dimensions(h::MPO) = [bond_dimension(h, i) for i in 1:length(h)]
 bond_dimension(h::MPO) = maximum(bond_dimensions(h))
@@ -104,11 +99,7 @@ function physical_dimensions(psi::MPO)
 end
 
 
-
-space_l(psi::MPO) = size(psi[1], 1)
-space_r(psi::MPO) = size(psi[end], 3)
 isstrict(psi::MPO) = (space_l(psi) == space_r(psi) == 1)
-
 
 mpo_tensor_adjoint(m::MPOTensor) = conj(permute(m, (1,4,3,2)))
 

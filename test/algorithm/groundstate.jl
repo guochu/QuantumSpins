@@ -10,7 +10,7 @@ function check_gs()
 
 	mpo = MPO(ham)
 	mps = randommps(L, d=2, D=10)
-	canonicalize!(mps, normalize=true)
+	canonicalize!(mps, alg=Orthogonalize(normalize=true))
 	energies, delta = ground_state!(mps, mpo, DMRG(verbosity=0))
 
 	mat = matrix(ham)

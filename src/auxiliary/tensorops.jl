@@ -1,9 +1,6 @@
 using LinearAlgebra: BlasFloat, LAPACK
 using LinearAlgebra.BLAS: gemm, gemm!
 
-is_zero(x::AbstractArray) = isapprox(x, zero(x))
-scalar_type(::Type{<:AbstractArray{T}}) where {T <: Number} = T
-scalar_type(x::AbstractArray{T}) where {T <: Number} = T
 
 scalar(x::AbstractArray{T}) where {T<:Number} = only(x)
 

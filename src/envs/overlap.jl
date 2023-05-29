@@ -9,7 +9,7 @@ struct OverlapCache{_A, _B, _C} <: AbstractCache
 end
 
 Base.length(x::OverlapCache) = length(x.A)
-scalar_type(x::OverlapCache) = promote_type(scalar_type(x.A), scalar_type(x.B))
+Base.eltype(x::OverlapCache) = promote_type(eltype(x.A), eltype(x.B))
 
 bra(x::OverlapCache) = x.A
 ket(x::OverlapCache) = x.B

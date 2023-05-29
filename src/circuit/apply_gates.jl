@@ -167,18 +167,25 @@ end
 function apply!(s::AbstractQuantumGate, mps::AbstractMPS; trunc::TruncationScheme=DefaultTruncation) 
 	(length(positions(s)) <= 4) || throw(ArgumentError("only 4-body (or less) gates are currently allowed."))
 	svectors_uninitialized(mps) && canonicalize!(mps)
-	return [_apply_impl(positions(s), Array(op(s)), mps, trunc)]
+	err = _apply_impl(positions(s), Array(op(s)), mps, trunc)
+	return mps
 end 
-apply!(s::AbstractQuantumGate, psi::DensityOperatorMPS; kwargs...) = apply!(s, psi.data; kwargs...)
+function apply!(s::AbstractQuantumGate, psi::DensityOperatorMPS; kwargs...)
+	apply!(s, psi.data; kwargs...)
+	return psi
+end 
 
 function apply!(circuit::AbstractQuantumCircuit, mps::AbstractMPS; kwargs...)
-	errs = Float64[]
+	# errs = Float64[]
 	for gate in circuit
-		err = apply!(gate, mps; kwargs...)
-		append!(errs, err)
+		mps = apply!(gate, mps; kwargs...)
+		# append!(errs, err)
 	end
-	return errs
+	return mps
 end
-apply!(circuit::AbstractQuantumCircuit, psi::DensityOperatorMPS; kwargs...) = apply!(circuit, psi.data; kwargs...)
+function apply!(circuit::AbstractQuantumCircuit, psi::DensityOperatorMPS; kwargs...) 
+	apply!(circuit, psi.data; kwargs...)
+	return psi
+end 
 
 

@@ -1,5 +1,4 @@
-
-const DeparalleliseTol = 1.0e-12
+const DeparalleliseTol = 1.0e-11
 
 function _istwocolumnparallel(cola, colb, tol::Real)
     (length(cola) != length(colb)) && throw(DimensionMismatch())
@@ -11,7 +10,7 @@ function _istwocolumnparallel(cola, colb, tol::Real)
     dif = colb - factor*cola
     for i in dif
         if abs(i) > tol
-        	return false, 0.
+            return false, 0.
         end
     end
     return true, factor
@@ -21,29 +20,29 @@ function _getridofzerocol(m::AbstractArray{T, 2}, tol::Real, verbosity::Int=0) w
     s1, s2 = size(m)
     zerocols = Vector{Int}(undef, 0)
     for j = 1:s2
-    	allzero = true
-    	for i=1:s1
-    	    if abs(m[i, j]) > tol
-    	        allzero = false
-    	        break
-    	    end
-    	end
-    	if allzero
-    	    (verbosity > 3) && println("all elements of column $j are zero.")
-    	    Base.push!(zerocols, j)
-    	end
+        allzero = true
+        for i=1:s1
+            if abs(m[i, j]) > tol
+                allzero = false
+                break
+            end
+        end
+        if allzero
+            (verbosity > 3) && println("all elements of column $j are zero.")
+            Base.push!(zerocols, j)
+        end
     end
     ns = s2 - length(zerocols)
     (ns == 0 && verbosity > 3) && println("all the columns are zero.")
-	mout = zeros(T, (s1, ns))
-	j = 1
-	for i=1:s2
-		if !(i in zerocols)
-		    mout[:, j] .= view(m, :, i)
-		    j += 1
-	    end
-	end
-	return mout, zerocols
+    mout = zeros(T, (s1, ns))
+    j = 1
+    for i=1:s2
+        if !(i in zerocols)
+            mout[:, j] .= view(m, :, i)
+            j += 1
+        end
+    end
+    return mout, zerocols
 end
 
 
@@ -52,21 +51,21 @@ function _matrixdeparallelisenozerocols(m::AbstractArray{T, 2}, tol::Real, verbo
     K = []
     Tm = zeros(T, (s2, s2))
     for j = 1:s2
-    	exist = false
-    	for i=1:length(K)
-    	    p, factor = _istwocolumnparallel(K[i], m[:, j], tol)
-    	    if p
-    	       (verbosity > 3) && println("column $i is in parallel with column $j.")
-    	       Tm[i, j] = factor
-    	       exist = true
-    	       break
-    	    end
-    	end
-    	if !exist
-    	    Base.push!(K, m[:, j])
-    	    nK = length(K)
-    	    Tm[nK, j] = 1
-    	end
+        exist = false
+        for i=1:length(K)
+            p, factor = _istwocolumnparallel(K[i], m[:, j], tol)
+            if p
+               (verbosity > 3) && println("column $i is in parallel with column $j.")
+               Tm[i, j] = factor
+               exist = true
+               break
+            end
+        end
+        if !exist
+            Base.push!(K, m[:, j])
+            nK = length(K)
+            Tm[nK, j] = 1
+        end
     end
     nK = length(K)
     M = zeros(T, (s1, nK))
@@ -82,7 +81,7 @@ function matrixdeparlise_col(m::AbstractArray{T, 2}, tol::Real; verbosity::Int=0
     # isapprox(mnew, M*Tm) || error("matrixdeparallise error.")
     if isempty(M)
         (verbosity > 3) && println("all the elements of the matrix M are 0.")
-        return M, Tm
+        return M, zeros(T, 0, size(m, 2))
     end
     Tnew = zeros(T, (size(Tm, 1), size(m, 2)))
     j = 1
@@ -102,15 +101,17 @@ function matrixdeparlise_row(m::AbstractMatrix, tol::Real; verbosity::Int=0)
     return transpose(b), transpose(a)
 end
 
-# matrixdeparlise(m::AbstractMatrix, row::Bool, tol::Real; verbosity::Int=0) = row ? matrixdeparlise_row(m, tol, verbosity=verbosity) : matrixdeparlise_col(m, tol, verbosity=verbosity)
+matrixdeparlise(m::AbstractMatrix, row::Bool, tol::Real; verbosity::Int=0) = row ? matrixdeparlise_row(m, tol, verbosity=verbosity) : matrixdeparlise_col(m, tol, verbosity=verbosity)
+
+leftdeparallel(m::AbstractMatrix; tol::Real=DeparalleliseTol, verbosity::Int=0) = matrixdeparlise(m, false, tol, verbosity=verbosity)
+rightdeparallel(m::AbstractMatrix; tol::Real=DeparalleliseTol, verbosity::Int=0) = matrixdeparlise(m, true, tol, verbosity=verbosity)
 
 """
     deparallelise_util(a::AbstractArray{T, N}, axs::Tuple{NTuple{N1, Int}, NTuple{N2, Int}}, tol::Real=1.0e-12; verbose::Int=0) where {T, N, N1, N2}
 Deparallelisation of QTensor a, by joining axs to be the second dimension
 """
-function deparallelise_util(a::AbstractArray{T, N}, left::NTuple{N1, Int}, right::NTuple{N2, Int}; row_or_col::Symbol=:row,
+function deparallelise_util(a::AbstractArray{T, N}, left::NTuple{N1, Int}, right::NTuple{N2, Int}; row_or_col::Bool,
     tol::Real=DeparalleliseTol, verbosity::Int=0) where {T, N, N1, N2}
-    ((row_or_col == :row) || (row_or_col == :col)) || throw(ArgumentError("row_or_col must be row or col"))
     (N == N1+N2) || throw(DimensionMismatch())
     dim = (left..., right...)
     b = permute(a, dim)
@@ -120,18 +121,12 @@ function deparallelise_util(a::AbstractArray{T, N}, left::NTuple{N1, Int}, right
     s1 = prod(ushape)
     s2 = prod(vshape)
     b = reshape(b, s1, s2)
-    if row_or_col == :row
-        u, v = matrixdeparlise_row(b, tol, verbosity=verbosity)
-    else
-        u, v = matrixdeparlise_col(b, tol, verbosity=verbosity)
-    end
+    u, v = matrixdeparlise(b, row_or_col, tol, verbosity=verbosity)
     (size(u,2)!=size(v,1)) && error("matrix deparallelise error.")
     md = size(u, 2)
     return reshape(u, ushape..., md), reshape(v, md, vshape...)
 end
 
-left_deparallelise(a::AbstractArray, left::Tuple, right::Tuple; kwargs...) = deparallelise_util(a, left, right; row_or_col=:col, kwargs...)
-right_deparallelise(a::AbstractArray, left::Tuple, right::Tuple; kwargs...) = deparallelise_util(a, left, right; row_or_col=:row, kwargs...)
-
-
+leftdeparallel(a::AbstractArray, left::Tuple, right::Tuple; kwargs...) = deparallelise_util(a, left, right; row_or_col=false, kwargs...)
+rightdeparallel(a::AbstractArray, left::Tuple, right::Tuple; kwargs...) = deparallelise_util(a, left, right; row_or_col=true, kwargs...)
 

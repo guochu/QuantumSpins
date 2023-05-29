@@ -39,7 +39,7 @@ function split_nn_ham(ham::QuantumOperator)
 end
 
 function _expm(ham, t::Number, dt::Number)
-	if is_constant(ham)
+	if isconstant(ham)
 		return _expm(ham, dt)
 	else
 		return _expm(ham(t), dt)

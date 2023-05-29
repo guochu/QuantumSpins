@@ -1,6 +1,6 @@
-
-
-println("-----------test elementary tensor operations-----------------")
+println("------------------------------------")
+println("|       tensor operations          |")
+println("------------------------------------")
 
 function check_svd()
 	m = randn(ComplexF64, 3,5)

@@ -6,7 +6,7 @@ struct SuperOperator{T<:Number} <: AbstractSuperOperator
 	data::QuantumOperator{T}
 end
 
-scalar_type(::Type{SuperOperator{T}}) where {T} = T
+Base.eltype(::Type{SuperOperator{T}}) where {T} = T
 
 Base.copy(x::SuperOperator) = SuperOperator(copy(x.data))
 
@@ -37,8 +37,8 @@ end
 function add_unitary!(m::SuperOperator, x::QTerm)
 	x2 = -im * x
 	iden = id(x)
-	add!(m, superoperator(x2, iden) )
-	add!(m, superoperator(iden, x2) )
+	add!(m, superterm(x2, iden) )
+	add!(m, superterm(iden, x2) )
 end 
 
 function add_unitary!(m::SuperOperator, x::QuantumOperator)
@@ -48,22 +48,22 @@ function add_unitary!(m::SuperOperator, x::QuantumOperator)
 end
 
 function add_dissipation!(m::SuperOperator, x::QTerm)
-	add!(m, 2*superoperator(x, x))
+	add!(m, 2*superterm(x, x))
 	x2 = x' * x
 	iden = -id(x)
-	add!(m, superoperator(x2, iden) )
-	add!(m, superoperator(iden, x2))
+	add!(m, superterm(x2, iden) )
+	add!(m, superterm(iden, x2))
 end
 
 function add_dissipation!(m::SuperOperator, x::QuantumOperator)
 	terms = qterms(x)
 	for t1 in terms
 		for t2 in terms
-			add!(m, 2*superoperator(t1, t2))
+			add!(m, 2*superterm(t1, t2))
 			x2 = t2' * t1
 			iden = -id(x2)
-			add!(m, superoperator(x2, iden))
-			add!(m, superoperator(iden, x2))
+			add!(m, superterm(x2, iden))
+			add!(m, superterm(iden, x2))
 		end
 	end
 end
@@ -77,8 +77,8 @@ function superoperator(h::QuantumOperator)
 	for t in qterms(h)
 		x2 = t
 		iden = id(t)
-		push!(terms, superoperator(x2, iden))
-		push!(terms, superoperator(iden, x2))
+		push!(terms, superterm(x2, iden))
+		push!(terms, superterm(iden, x2))
 	end
 	return SuperOperator([terms...])
 end

@@ -10,10 +10,7 @@ QuantumOperator{T}(ds::Vector{Int}) where {T <: Number} = QuantumOperator{T}(con
 QuantumOperator{T}() where {T <: Number} = QuantumOperator{T}(Vector{Union{Int, Missing}}())
 
 function QuantumOperator(ms::Vector{<:QTerm})
-	T = Float64
-	for item in ms
-		T = promote_type(T, scalar_type(item))
-	end
+	T = compute_eltype(ms)
 	r = QuantumOperator{T}()
 	for item in ms
 		add!(r, item)
@@ -21,7 +18,7 @@ function QuantumOperator(ms::Vector{<:QTerm})
 	return r
 end
 
-scalar_type(::Type{QuantumOperator{T}}) where T = T
+Base.eltype(::Type{QuantumOperator{T}}) where T = T
 
 Base.copy(x::QuantumOperator) = QuantumOperator(copy(x.physpaces), deepcopy(x.data))
 Base.similar(s::QuantumOperator{T}) where T = QuantumOperator{T}()
@@ -43,7 +40,7 @@ end
 
 function Base.:*(x::QuantumOperator, y::AllowedCoefficient) 
 	y = Coefficient(y)
-	T = promote_type(scalar_type(x), scalar_type(y))
+	T = promote_type(eltype(x), eltype(y))
 	r = QOP_DATA_TYPE{T}()
 	for (k, v) in x.data
 		vr =  typeof(v)()
@@ -58,7 +55,7 @@ end
 Base.adjoint(x::QuantumOperator) = QuantumOperator(x.physpaces, data_type(x)(k=>[(adjoint.(a), conj(b)) for (a, b) in v] for (k, v) in x.data))
 
 function Base.:+(x::QuantumOperator, y::QuantumOperator)
-	T = promote_type(scalar_type(x), scalar_type(y)) 
+	T = promote_type(eltype(x), eltype(y)) 
 	z = QuantumOperator{T}(_merge_spaces(x.physpaces, y.physpaces), convert(QOP_DATA_TYPE{T}, copy(x.data)))
 	for (k, v) in y.data
 	   	tmp = get!(z.data, k, Vector{Tuple{Vector{MPOTensor{T}}, AbstractCoefficient}}())
@@ -101,7 +98,7 @@ end
 	adding a new term into the quantum operator
 """
 function add!(x::QuantumOperator, m::QTerm) 
-	is_zero(m) && return
+	iszero(m) && return
 	pos = Tuple(positions(m))
 	L = length(x)
 	if pos[end] > L
@@ -128,7 +125,7 @@ function qterms(x::QuantumOperator)
 	for (k, v) in x.data
 		for (m, c) in v
 			a = QTerm(k, m, coeff=c)
-			if !is_zero(a)
+			if !iszero(a)
 				push!(r, a)
 			end
 		end
@@ -144,7 +141,7 @@ function qterms(x::QuantumOperator, k::Tuple)
 	else
 		for (m, c) in v
 			a = QTerm(k, m, coeff=c)		
-			if !is_zero(a)
+			if !iszero(a)
 				push!(r, a)
 			end
 		end

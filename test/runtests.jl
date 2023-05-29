@@ -6,17 +6,15 @@ using KrylovKit
 using TensorOperations
 using LinearAlgebra: Diagonal
 
+const QS = QuantumSpins
 
+include("auxiliary.jl")
+include("tensorops.jl")
+include("mps.jl")
 
-include("check_tensorops.jl")
-
-include("check_mpsops.jl")
-
-include("check_mpsalgs.jl")
-
-include("check_gs.jl")
-
-include("check_timeevo.jl")
-
-include("check_twotimecorr.jl")
+## algorithms
+include("algorithm/iterativealgs.jl")
+include("algorithm/groundstate.jl")
+include("algorithm/timeevo.jl")
+include("algorithm/twotimecorr.jl")
 

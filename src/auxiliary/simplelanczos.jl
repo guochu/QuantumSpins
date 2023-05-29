@@ -1,17 +1,15 @@
-
 const LANCZOS_ORTH_TOL = 1.0e-12
 
-
 function find_lanczos(w::Vector{<:Real}, wh::String)
-	isempty(w) && error("input vector must not be empty.")
+	isempty(w) && error("input vector must not be empty")
 	if wh == "LM"
-	    return Base.argmax(abs.(w))
+	    return argmax(abs.(w))
 	elseif wh == "SM"
-		return Base.argmin(abs.(w))
+		return argmin(abs.(w))
 	elseif (wh == "SR" || wh == "SA")
 		return 1
 	else
-		(wh == "SR" || wh == "SA") || error("wrong which.")
+		(wh == "SR" || wh == "SA") || error("which is only allowed to be 'LM', 'SM' or 'SR'")
 		return length(w)
 	end
 end
@@ -29,7 +27,7 @@ function lanczos_make_first_step(A, v)
 	qi = A(qiminus1)
 	a = dot(qiminus1, qi)
 	if abs(imag(a)) > LANCZOS_ORTH_TOL
-		@warn "imaginary part the a is $(abs(imag(a))), larger than tolarence $LANCZOS_ORTH_TOL."
+		@warn "imaginary part the a is very large($(abs(imag(a))))"
 	end
 	a = real(a)
 	qi -= qiminus1 * a
@@ -53,7 +51,7 @@ function lanczos_make_step(A, qiminus1, qi, bold)
 	a = dot(qi, qiplus1)
 
 	if abs(imag(a)) > LANCZOS_ORTH_TOL
-		@warn "imaginary part the a is $(abs(imag(a))), larger than tolarence $LANCZOS_ORTH_TOL."
+		@warn "imaginary part the a is very large($(abs(imag(a))))"
 	end
 	a = real(a)
 	qiplus1 -= (qi*a + qiminus1 * bold)
@@ -67,7 +65,7 @@ function lanczos_make_step(A, qiminus1, qi, bold)
 end
 
 function lanczos_linear_transformation_single(singleTvector, Rvectors)
-	isempty(Rvectors) && error("Rvectors is empty.")
+	isempty(Rvectors) && error("Rvectors is empty")
 	nR = length(Rvectors)
 	evec = Rvectors[end]*singleTvector[end]
 	for i=1:(nR-1)
@@ -83,11 +81,11 @@ function simple_lanczos_solver(A, v, wh::String="SA", kmax::Int=10, btol::Real=1
 	info = 0
 	a, b, qiminus1, qi, vm = lanczos_make_first_step(A, v)
 	if b < btol
-	    verbosity >= 2 && println("lanczos converged after the first iteration.")
+	    (verbosity > 3) && println("lanczos converged after the first iteration")
 	    return a, qiminus1, info
 	end
 	V = Vector{Any}()
-	Base.push!(V, qiminus1)
+	push!(V, qiminus1)
 	T = zeros(Float64, kmax, kmax)
 	T[1,1] = a
 	k = 1
@@ -97,18 +95,18 @@ function simple_lanczos_solver(A, v, wh::String="SA", kmax::Int=10, btol::Real=1
 	    T[k, k+1] = b
 	    T[k+1, k] = b
 	    a, b, qiminus1, qi = lanczos_make_step(A, qiminus1, qi, b)
-	    Base.push!(V, qiminus1)
+	    push!(V, qiminus1)
 	    T[k+1, k+1] = a
 	    k += 1
 	    if b < btol
-	    	verbosity >=2 && println("lanczos converges after $k iterations.")
+	    	(verbosity > 3) && println("lanczos converges after $k iterations")
 	        converged = true
 	        break
 	    end
 	end
 	if !converged
 	    info = -1
-	    verbosity >= 2 && println("lanczos fail to converge after $kmax iterations.")
+	    (verbosity > 3) && println("lanczos fail to converge after $kmax iterations")
 	end
 	# println(T[1:k, 1:k])
 	F = eigen(Symmetric(T[1:k, 1:k]))
@@ -117,60 +115,3 @@ function simple_lanczos_solver(A, v, wh::String="SA", kmax::Int=10, btol::Real=1
 	pos = find_lanczos(eigval, wh)
 	return eigval[pos], lanczos_linear_transformation_single(eigvec[:, pos], V), info
 end
-
-function fixed_step_lanczos_iteration(A, v0, kmax::Int=10)
-	a, b, qiminus1, qi, vm = lanczos_make_first_step(A, v0)
-	alphas = Vector{Float64}()
-	betas = Vector{Float64}()
-	push!(alphas, a)
-	k = 1
-	while k < kmax
-		push!(betas, b)
-	    a, b, qiminus1, qi = lanczos_make_step(A, qiminus1, qi, b)
-	    push!(alphas, a)
-	    k += 1
-	end
-	return alphas, betas
-end
-
-function fixed_step_lanczos_iteration_full(A, v0, kmax::Int=10)
-	a, b, qiminus1, qi, vm = lanczos_make_first_step(A, v0)
-	V = []
-	push!(V, qiminus1)
-	alphas = Vector{Float64}()
-	betas = Vector{Float64}()
-	push!(alphas, a)
-	k = 1
-	while k < kmax
-		push!(betas, b)
-	    a, b, qiminus1, qi = lanczos_make_step(A, qiminus1, qi, b)
-	    push!(V, qiminus1)
-	    push!(alphas, a)
-	    k += 1
-	end
-	return alphas, betas, V
-end
-
-# L = 10
-
-# A = rand(Complex{Float64}, L, L)
-# A = A +  A'
-# v0 = rand(Float64, L)
-# s, v, info = simple_lanczos_solver(A, v0, "SA", 10, 1.0e-8, verbose=2)
-# println(s)
-
-
-
-# L = 20
-
-# A = rand(ComplexF64, L, L)
-# A = A +  A'
-# v0 = rand(ComplexF64, L)
-# alphas, betas, Vs = fixed_step_lanczos_iteration_full(A, v0, 4)
-# println(alphas)
-# println(betas)
-
-# U = hcat(Vs...)
-# println(U' * A * U)
-
-

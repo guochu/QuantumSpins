@@ -56,7 +56,7 @@ function iterative_compute!(m, alg, args...)
         println("early converge in $iter-th sweeps with error $tol")
     end
     if (alg.verbosity > 0) && (tol >= alg.tol)
-        println("fail to converge, required precision: $(alg.tol), actual precision $tol in $iter sweeps.")
+        println("fail to converge, required precision: $(alg.tol), actual precision $tol in $iter sweeps")
     end
     return kvals
 end

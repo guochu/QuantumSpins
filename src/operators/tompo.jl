@@ -1,8 +1,8 @@
 
 
 function prodmpo(physpaces::Vector{Int}, m::QTerm) 
-	is_constant(m) || throw(ArgumentError("only constant term allowed."))
-	return prodmpo(scalar_type(m), physpaces, positions(m), op(m)) * value(coeff(m))
+	isconstant(m) || throw(ArgumentError("only constant term allowed."))
+	return prodmpo(eltype(m), physpaces, positions(m), op(m)) * value(coeff(m))
 end
 
 function MPO(physpaces::Vector{Int}, h::QuantumOperator; alg::AbstractCompression=Deparallelise())
@@ -36,7 +36,7 @@ MPO(physpaces::Vector{Int}, h::SuperOperator; kwargs...) = MPO(physpaces, h.data
 MPO(h::SuperOperator; kwargs...) = MPO(h.data; kwargs...)
 
 function simplify(h::QuantumOperator, alg::AbstractCompression)
-	is_constant(h) || throw(ArgumentError("Simplifying non constant Hamiltonian not supported."))
+	isconstant(h) || throw(ArgumentError("Simplifying non constant Hamiltonian not supported."))
 	r = similar(h)
 	for (k, v) in raw_data(h)
 		tmp = _qterm_compress(k, v, alg)
@@ -71,7 +71,7 @@ function _qterm_compress(pos::Tuple, v::Vector{Tuple{Vector{M}, AbstractCoeffici
 	local mpo
 	compress_threshold = 20
 	for (m, alhpa) in v
-		# is_constant(alhpa) || error("only constant terms are allowed.")
+		# isconstant(alhpa) || error("only constant terms are allowed.")
 		if (@isdefined mpo) && (!isnothing(mpo))
 			mpo += prodmpo(physpaces, new_pos, m) * value(alhpa)
 		else

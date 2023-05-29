@@ -24,23 +24,23 @@ end
 
 
 
-scalar_type(m::MPOMPSIterativeMultCache) = scalar_type(m.omps)
+Base.eltype(m::MPOMPSIterativeMultCache) = eltype(m.omps)
 
-sweep!(m::MPOMPSIterativeMultCache, alg::AbstractMPSArith, workspace = scalar_type(m)[]) = vcat(_leftsweep!(m, alg, workspace), _rightsweep!(m, alg, workspace))
+sweep!(m::MPOMPSIterativeMultCache, alg::AbstractMPSArith, workspace = eltype(m)[]) = vcat(_leftsweep!(m, alg, workspace), _rightsweep!(m, alg, workspace))
 
-compute!(m::MPOMPSIterativeMultCache, alg::AbstractMPSArith, workspace = scalar_type(m)[]) = iterative_compute!(m, alg, workspace)
+compute!(m::MPOMPSIterativeMultCache, alg::AbstractMPSArith, workspace = eltype(m)[]) = iterative_compute!(m, alg, workspace)
 
 function iterative_mult(mpo::MPO, mps::MPS, alg::OneSiteIterativeArith = OneSiteIterativeArith())
-	mpsout = randommps(promote_type(scalar_type(mpo), scalar_type(mps)), ophysical_dimensions(mpo), D=alg.D)
+	mpsout = randommps(promote_type(eltype(mpo), eltype(mps)), ophysical_dimensions(mpo), D=alg.D)
 	# canonicalize!(mpsout, normalize=true)
-    rightorth!(mpsout, alg=QRFact(normalize=true))
+    rightorth!(mpsout, alg=Orthogonalize(normalize=true))
 	m = MPOMPSIterativeMultCache(mpo, mps, mpsout, init_hstorage_right(mpsout, mpo, mps))
 	kvals = compute!(m, alg)
 	return m.omps, kvals[end]
 end
 
 
-function _leftsweep!(m::MPOMPSIterativeMultCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[])
+function _leftsweep!(m::MPOMPSIterativeMultCache, alg::OneSiteIterativeArith, workspace = eltype(m)[])
     mpsA = m.imps
     mpo = m.mpo
     mpsB = m.omps
@@ -58,14 +58,14 @@ function _leftsweep!(m::MPOMPSIterativeMultCache, alg::OneSiteIterativeArith, wo
     return kvals	
 end
 
-function _rightsweep!(m::MPOMPSIterativeMultCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[])
+function _rightsweep!(m::MPOMPSIterativeMultCache, alg::OneSiteIterativeArith, workspace = eltype(m)[])
     mpsA = m.imps
     mpo = m.mpo
     mpsB = m.omps
     Cstorage = m.hstorage
     L = length(mpo)
     kvals = Float64[]
-    r = zeros(scalar_type(mpsB), 0, 0)
+    r = zeros(eltype(mpsB), 0, 0)
 
     for site in L:-1:2
         (alg.verbosity > 3) && println("Sweeping from right to left at bond: $site.")
@@ -82,7 +82,7 @@ function _rightsweep!(m::MPOMPSIterativeMultCache, alg::OneSiteIterativeArith, w
     return kvals	
 end
 
-# function _leftsweep!(m::MPOMPSIterativeMultCache, alg::TwoSiteIterativeMult, workspace = scalar_type(m)[])
+# function _leftsweep!(m::MPOMPSIterativeMultCache, alg::TwoSiteIterativeMult, workspace = eltype(m)[])
 #     mpsA = m.imps
 #     mpo = m.mpo
 #     mpsB = m.omps
@@ -102,7 +102,7 @@ end
 #     return kvals
 # end
 
-# function _rightsweep!(m::MPOMPSIterativeMultCache, alg::TwoSiteIterativeMult, workspace = scalar_type(m)[])
+# function _rightsweep!(m::MPOMPSIterativeMultCache, alg::TwoSiteIterativeMult, workspace = eltype(m)[])
 #     mpsA = m.imps
 #     mpo = m.mpo
 #     mpsB = m.omps
@@ -143,7 +143,7 @@ end
 # end
 
 function init_hstorage_right(mpsB, mpo, mpsA)
-	T = promote_type(scalar_type(mpsA), scalar_type(mpo), scalar_type(mpsB))
+	T = promote_type(eltype(mpsA), eltype(mpo), eltype(mpsB))
 	L = length(mpo)
 	hstorage = Vector{Array{T, 3}}(undef, L+1)
 	hstorage[1] = ones(T, 1, 1, 1)

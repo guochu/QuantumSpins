@@ -59,7 +59,7 @@ function check_twotime_corr()
 	init_state_2 = [0 for i in 1:L]
 	init_state_2[2:2:L] .= 1
 	state = prodmps(ComplexF64, [2 for i in 1:L], init_state) + prodmps(ComplexF64, [2 for i in 1:L], init_state_2)
-	canonicalize!(state, normalize=true)
+	canonicalize!(state, alg = Orthogonalize(QS.SVD(), normalize=true))
 
 	p = spin_half_matrices()
 	ts = [0., 0.05, 0.2, 0.56]

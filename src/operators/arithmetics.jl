@@ -50,7 +50,7 @@ function _is_prop_util(x::AbstractArray, a::AbstractArray; atol::Real=1.0e-14)
 end
 
 function _expm(x::QuantumOperator, dt::Number) 
-	is_constant(x) || throw(ArgumentError("input operator should be constant."))
+	isconstant(x) || throw(ArgumentError("input operator should be constant."))
 	r = QuantumCircuit()
 	for k in keys(x.data)
 	    m = qterms(x, k)
@@ -75,16 +75,16 @@ end
 
 
 function matrix(ds::Vector{Int}, m::QTerm)
-	is_constant(m) || throw(ArgumentError("QTerm must be constant."))
+	isconstant(m) || throw(ArgumentError("QTerm must be constant."))
 	opstr = Dict(k=>v for (k, v) in zip(positions(m), op(m)))
 	return _prodham_util(ds, opstr) * value(coeff(m))
 end
 
 function matrix(x::QuantumOperator)
-	is_constant(x) || error("input must be a constant operator.")
+	isconstant(x) || error("input must be a constant operator.")
 	ds = physical_dimensions(x)
 	n = prod(ds)
-	h = zeros(scalar_type(x), n, n)
+	h = zeros(eltype(x), n, n)
 	for item in qterms(x)
 		h += matrix(ds, item)
 	end
@@ -114,7 +114,7 @@ function _prodham_util(ds::Vector{Int}, opstr::Dict{Int, <:MPOTensor})
 end
 
 _join_ops(s::QTerm) = begin
-    is_constant(s) || error("can not join non-constant hamiltonian term.")
+    isconstant(s) || error("can not join non-constant hamiltonian term.")
     ds = physical_dimensions(s)
     m = _kron_chain_ops(op(s))
     return reshape(m * value(coeff(s)) , Tuple(repeat(ds, 2)))

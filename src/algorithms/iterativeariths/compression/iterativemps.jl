@@ -11,13 +11,13 @@ The given mps/mpo should be right-canonical, the initial guess is the copy
 of the given mps/mpo.
 """
 function iterative_compress(mps::MPS, alg::AbstractMPSArith=OneSiteIterativeArith())
-	mpsout = randommps(scalar_type(mps), physical_dimensions(mpo), D=alg.D)
+	mpsout = randommps(eltype(mps), physical_dimensions(mpo), D=alg.D)
 	canonicalize!(mpsout)
 	return iterative_compress!(mpsout, mps, alg)
 end 
 function iterative_compress(h::MPO, alg::AbstractMPSArith=OneSiteIterativeArith())
-	hout = randommpo(scalar_type(h), ophysical_dimensions(h), iphysical_dimensions(h), D=alg.D)
-	rightorth!(hout, alg=QRFact())
+	hout = randommpo(eltype(h), ophysical_dimensions(h), iphysical_dimensions(h), D=alg.D)
+	rightorth!(hout, alg=Orthogonalize(QR()))
 	return iterative_compress!(hout, h, alg)
 end
 function iterative_compress!(omps::M, imps::M, alg::AbstractMPSArith = OneSiteIterativeArith()) where {M <: Union{MPS, MPO}}
@@ -29,7 +29,7 @@ end
 sweep!(m::OverlapCache, alg::OneSiteIterativeArith) = vcat(leftsweep!(m, alg), rightsweep!(m, alg))
 
 # A is assumed to be the input and B the output
-function leftsweep!(m::MPSOverlapCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[])
+function leftsweep!(m::MPSOverlapCache, alg::OneSiteIterativeArith, workspace = eltype(m)[])
 	omps = bra(m)
 	imps = ket(m)
 	Cstorage = m.cstorage
@@ -46,14 +46,14 @@ function leftsweep!(m::MPSOverlapCache, alg::OneSiteIterativeArith, workspace = 
 	return kvals
 end
 
-function rightsweep!(m::MPSOverlapCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[])
+function rightsweep!(m::MPSOverlapCache, alg::OneSiteIterativeArith, workspace = eltype(m)[])
 	omps = bra(m)
 	imps = ket(m)
 	Cstorage = m.cstorage
 	kvals = Float64[]
 	L = length(m)
 
-    r = zeros(scalar_type(omps), 0, 0)
+    r = zeros(eltype(omps), 0, 0)
 
 	for site in L:-1:2
 		(alg.verbosity > 3) && println("sweeping from right to left at site: $site.")

@@ -7,9 +7,9 @@ function svd_add(psiA::MPS, psiB::MPS, alg::SVDArith = SVDArith())
         return MPS([psiA[1] + psiB[1]])
     end
     trunc = get_trunc(alg)
-    T = promote_type(scalar_type(psiA), scalar_type(psiB))
+    T = promote_type(eltype(psiA), eltype(psiB))
     L = length(psiA)
-    r = MPS{T}(L)
+    r = Vector{Array{T, 3}}(undef, L)
     # r[1] = cat(psiA[1], psiB[1], dims=3)
     workspace = T[]
     tmp = cat(psiA[1], psiB[1], dims=3)
@@ -26,7 +26,8 @@ function svd_add(psiA::MPS, psiB::MPS, alg::SVDArith = SVDArith())
     rj = cat(psiA[L], psiB[L], dims=1)
     @tensor tmp[1,3,4] := v[1,2] * rj[2,3,4]
     r[L] = tmp
-    rightorth!(r, workspace, alg=SVDFact(trunc=trunc))
+    r = MPS(r)
+    rightorth!(r, workspace, alg=Orthogonalize(SVD(), trunc, normalize=false))
     return r, err
 end
 

@@ -4,8 +4,8 @@
 """
 function expectation_canonical(m::QTerm, psi::MPS)
 	isstrict(m) || throw(ArgumentError("QTerm should be strict."))
-	is_constant(m) || throw(ArgumentError("only constant QTerm allowed."))
-	is_zero(m) && return 0.
+	isconstant(m) || throw(ArgumentError("only constant QTerm allowed."))
+	iszero(m) && return 0.
 	L = length(psi)
 	pos = positions(m)
 	ops = op(m)
@@ -29,9 +29,9 @@ end
 function expectation(psiA::MPS, m::QTerm, psiB::MPS, envs::OverlapCache=environments(psiA, psiB))
 	cstorage = envs.cstorage
 	(length(psiA) == length(psiB) == length(cstorage)-1) || throw(DimensionMismatch())
-	is_constant(m) || throw(ArgumentError("only constant QTerm allowed."))
+	isconstant(m) || throw(ArgumentError("only constant QTerm allowed."))
 	isstrict(m) || throw(ArgumentError("QTerm should be strict."))
-	is_zero(m) && return 0.
+	iszero(m) && return 0.
 	L = length(psiA)
 	pos = positions(m)
 	ops = op(m)

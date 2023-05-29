@@ -23,9 +23,9 @@ function _leftsweep!(m::ExpectationCache, alg::TDVP)
 	isherm = alg.ishermitian
 	driver = isherm ? Lanczos() : Arnoldi()
 
-	workspace = promote_type(scalar_type(mpo), scalar_type(mps))[]
+	workspace = promote_type(eltype(mpo), eltype(mps))[]
 	for site in 1:length(mps)-1
-		(alg.verbosity > 3) && println("sweeping from left to right at site: $site.")
+		(alg.verbosity > 3) && println("sweeping from left to right at site: $site")
 		tmp, info = exponentiate(x->ac_prime(x, mpo[site], hstorage[site], hstorage[site+1]), dt/2, mps[site], driver)
 
 		mps[site], v = tqr!(tmp, (1,2), (3,), workspace)
@@ -47,9 +47,9 @@ function _rightsweep!(m::ExpectationCache, alg::TDVP)
 	isherm = alg.ishermitian
 	driver = isherm ? Lanczos() : Arnoldi()
 	
-	workspace = promote_type(scalar_type(mpo), scalar_type(mps))[]
+	workspace = promote_type(eltype(mpo), eltype(mps))[]
 	for site in length(mps)-1:-1:1
-		(alg.verbosity > 3) && println("sweeping from right to left at site: $site.")
+		(alg.verbosity > 3) && println("sweeping from right to left at site: $site")
 
 		v, Q = tlq!(mps[site+1], (1,), (2,3), workspace) 
 		mps[site+1] = Q

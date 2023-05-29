@@ -1,10 +1,11 @@
+println("------------------------------------")
+println("|         mps operations           |")
+println("------------------------------------")
 
-
-println("-----------test mps operations-----------------")
 
 function check_canonical()
 	mps = randommps(ComplexF64, 7, d=2, D=3)
-	canonicalize!(mps, normalize=true)
+	canonicalize!(mps, alg = Orthogonalize(normalize=true))
 	return iscanonical(mps)
 end
 

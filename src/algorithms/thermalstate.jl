@@ -8,8 +8,8 @@ function thermal_state(h::Union{QuantumOperator, MPO}; β::Real, stepper::Abstra
 	(isa(stepper, TEBDStepper) && isa(h, MPO)) && throw(ArgumentError("TEBD can not be used with MPO."))
 	beta = convert(Float64, β)
 	((beta >= 0.) && (beta != Inf)) || throw(ArgumentError("β expected to be finite."))
-	state = infinite_temperature_state(scalar_type(h), physical_dimensions(h))
-	canonicalize!(state, normalize=true)
+	state = infinite_temperature_state(eltype(h), physical_dimensions(h))
+	canonicalize!(state, alg=Orthogonalize(SVD(), normalize=true))
 	(beta == 0.) && return state
 	
 
@@ -25,7 +25,7 @@ function thermal_state(h::Union{QuantumOperator, MPO}; β::Real, stepper::Abstra
 		stepper = change_tspan_dt(stepper, tspan=tspan)
 		(@isdefined cache) || (cache = timeevo_cache(superh, stepper, state))
 		state, cache = timeevo!(state, superh, stepper, cache)
-		canonicalize!(state, normalize=true)
+		canonicalize!(state, alg=Orthogonalize(SVD(), normalize=true))
 	end
 	return normalize!(state)
 end
@@ -40,7 +40,7 @@ function itimeevo!(state::MPS, ham::Union{QuantumOperator, MPO}; stepper::Abstra
 	# preparation evolution
 	stepper = change_tspan_dt(stepper, tspan=(0., -1), stepsize=1)
 	state, cache = timeevo!(state, ham, stepper)
-	canonicalize!(state, normalize=true)
+	canonicalize!(state, alg=Orthogonalize(SVD(), normalize=true))
 	# warmup_sweeps = 2
 	# for i in 1:warmup_sweeps - 1
 	# 	state, cache = timeevo!(state, ham, stepper, cache)
@@ -60,7 +60,7 @@ function itimeevo!(state::MPS, ham::Union{QuantumOperator, MPO}; stepper::Abstra
 	while (( err >= atol) || (delta_t^(stepper.order) > atol)) && (itr <= maxitr)
 		stepper = change_tspan_dt(stepper, tspan=(0., -beta), stepsize=delta_t)
 		state, cache = timeevo!(state, ham, stepper, cache)
-		canonicalize!(state, normalize=true)
+		canonicalize!(state, alg=Orthogonalize(SVD(), normalize=true))
 		new_energy = _expec(ham, state)
 		# println("current energy is $(new_energy) in the $itr-th iteration, current δ=$delta_t")
 		push!(energies, new_energy)

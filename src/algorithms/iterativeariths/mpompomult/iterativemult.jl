@@ -8,25 +8,24 @@ struct MPOMPOIterativeMultCache{_MPO, _IMPO, _OMPO, _H} <: AbstractMPOMPOMultCac
 	hstorage::_H
 end
 
-scalar_type(m::MPOMPOIterativeMultCache) = scalar_type(m.ompo)
+Base.eltype(m::MPOMPOIterativeMultCache) = eltype(m.ompo)
 
-sweep!(m::MPOMPOIterativeMultCache, alg::AbstractMPSArith, workspace = scalar_type(m)[]) = vcat(_leftsweep!(m, alg, workspace), _rightsweep!(m, alg, workspace))
+sweep!(m::MPOMPOIterativeMultCache, alg::AbstractMPSArith, workspace = eltype(m)[]) = vcat(_leftsweep!(m, alg, workspace), _rightsweep!(m, alg, workspace))
 
 
-compute!(m::MPOMPOIterativeMultCache, alg::AbstractMPSArith, workspace = scalar_type(m)[]) = iterative_compute!(m, alg, workspace)
+compute!(m::MPOMPOIterativeMultCache, alg::AbstractMPSArith, workspace = eltype(m)[]) = iterative_compute!(m, alg, workspace)
 
 function iterative_mult(mpo::MPO, mps::MPO, alg::OneSiteIterativeArith = OneSiteIterativeArith())
-    T = promote_type(scalar_type(mpo), scalar_type(mps))
+    T = promote_type(eltype(mpo), eltype(mps))
     mpsout = randommpo(T, ophysical_dimensions(mpo), iphysical_dimensions(mps), D=alg.D)
-    # canonicalize!(mpsout, normalize=true)
-    rightorth!(mpsout, alg=QRFact(normalize=true))
+    rightorth!(mpsout, alg=Orthogonalize(normalize=true))
     m = MPOMPOIterativeMultCache(mpo, mps, mpsout, init_hstorage_right(mpsout, mpo, mps))
     kvals = compute!(m, alg)
     return m.ompo, kvals[end]
 end
 
 
-function _leftsweep!(m::MPOMPOIterativeMultCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[])
+function _leftsweep!(m::MPOMPOIterativeMultCache, alg::OneSiteIterativeArith, workspace = eltype(m)[])
     mpoA = m.impo
     mpo = m.mpo
     mpoB = m.ompo
@@ -45,14 +44,14 @@ function _leftsweep!(m::MPOMPOIterativeMultCache, alg::OneSiteIterativeArith, wo
     return kvals	
 end
 
-function _rightsweep!(m::MPOMPOIterativeMultCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[])
+function _rightsweep!(m::MPOMPOIterativeMultCache, alg::OneSiteIterativeArith, workspace = eltype(m)[])
     mpoA = m.impo
     mpo = m.mpo
     mpoB = m.ompo
     Cstorage = m.hstorage
     L = length(mpo)
     kvals = Float64[]
-    r = zeros(scalar_type(mpoB), 0, 0)
+    r = zeros(eltype(mpoB), 0, 0)
     for site in L:-1:2
         (alg.verbosity > 3) && println("Sweeping from right to left at bond: $site.")
         mpsj = reduceH_single_site(mpoA[site], mpo[site], Cstorage[site], Cstorage[site+1])
@@ -77,7 +76,7 @@ end
 function init_hstorage_right(B::MPO, mpo::MPO, A::MPO)
     @assert length(B) == length(mpo) == length(A)
     L = length(mpo)
-    T = promote_type(scalar_type(B), scalar_type(mpo), scalar_type(A))
+    T = promote_type(eltype(B), eltype(mpo), eltype(A))
     hstorage = Vector{Array{T, 3}}(undef, L+1)
     hstorage[1] = ones(1,1,1)
     hstorage[L+1] = ones(1,1,1)

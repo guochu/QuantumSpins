@@ -8,7 +8,7 @@ function _unitary_tt_corr_at_b(h, A::MPO, B::MPO, state, times, stepper)
 	canonicalize!(state_right)
 	state_left = copy(state)
 
-	result = scalar_type(state)[]
+	result = eltype(state)[]
 	local cache_left, cache_right	
 	for i in 1:length(times)	
 		# println("state norm $(norm(state_left)), $(norm(state_right)).")
@@ -31,7 +31,7 @@ function _unitary_tt_corr_a_bt(h, A::MPO, B::MPO, state, times, stepper)
 	state_left = A' * state
 	canonicalize!(state_left)
 
-	result = scalar_type(state)[]
+	result = eltype(state)[]
 	local cache_left, cache_right	
 	for i in 1:length(times)	
 		tspan = (i == 1) ? (0., times[1]) : (times[i-1], times[i])
@@ -59,7 +59,7 @@ end
 """
 function correlation_2op_1t(h::Union{QuantumOperator, AbstractMPO}, a::AbstractMPO, b::AbstractMPO, state::MPS, times::Vector{<:Real};
 	stepper::AbstractStepper=TEBDStepper(tspan=(0., 0.01), stepsize=0.01), reverse::Bool=false)
-	if scalar_type(state) <: Real
+	if eltype(state) <: Real
 		state = complex(state)
 	end
 	times = -im .* times
@@ -82,7 +82,7 @@ function _open_tt_corr_at_b(h, A::MPO, B::MPO, state, times, stepper)
 	state_right = B * state
 	canonicalize!(state_right)
 
-	result = scalar_type(state_right)[]
+	result = eltype(state_right)[]
 	local cache_right
 	for i in 1:length(times)	
 		tspan = (i == 1) ? (0., times[1]) : (times[i-1], times[i])
@@ -100,7 +100,7 @@ function _open_tt_corr_a_bt(h, A::MPO, B::MPO, state, times, stepper)
 	state_right = A * state
 	canonicalize!(state_right)
 
-	result = scalar_type(state_right)[]
+	result = eltype(state_right)[]
 	local cache_right
 	for i in 1:length(times)	
 		tspan = (i == 1) ? (0., times[1]) : (times[i-1], times[i])

@@ -28,7 +28,7 @@ Euclidean distance between a and b.
 distance(a::AbstractMPS, b::AbstractMPS) = _distance(a, b)
 
 
-function LinearAlgebra.normalize!(psi::AbstractPureStateMPS; iscanonical::Bool=false)
+function LinearAlgebra.normalize!(psi::AbstractPureMPS; iscanonical::Bool=false)
     n = norm(psi, iscanonical=iscanonical)
     (n ≈ zero(n)) && @warn "quantum state has zero norm."
     if n != one(n)
@@ -43,11 +43,11 @@ function LinearAlgebra.normalize!(psi::AbstractPureStateMPS; iscanonical::Bool=f
     end
     return psi
 end
-LinearAlgebra.normalize(psi::AbstractPureStateMPS; iscanonical::Bool=false) = normalize!(copy(psi); iscanonical=iscanonical)
+LinearAlgebra.normalize(psi::AbstractPureMPS; iscanonical::Bool=false) = normalize!(copy(psi); iscanonical=iscanonical)
 
 function Base.:*(psi::MPS, f::Number)
-	T = coerce_scalar_type(scalar_type(psi), typeof(f)) 
-	r = MPS{T}(copy(raw_data(psi)), copy(raw_singular_matrices(psi)))
+	T = coerce_scalar_type(eltype(psi), typeof(f)) 
+	r = MPS{T, real(T)}(copy(raw_data(psi)), copy(raw_singular_matrices(psi)))
 	r[1] *= convert(T, f)
 	return r
 end 
@@ -73,12 +73,12 @@ Addition of two MPSs
 """
 function Base.:+(psiA::MPS, psiB::MPS) 
     (length(psiA) == length(psiB)) || throw(DimensionMismatch())
-    (isempty(psiA)) && error("input mps is empty.")
+    @assert !isempty(psiA)
     if length(psiA) == 1
         return MPS([psiA[1] + psiB[1]])
     end
     L = length(psiA)
-    T = promote_type(scalar_type(psiA), scalar_type(psiB))
+    T = promote_type(eltype(psiA), eltype(psiB))
     r = Vector{Array{T, 3}}(undef, L)
     r[1] = cat(psiA[1], psiB[1], dims=3)
     r[L] = cat(psiA[L], psiB[L], dims=1)
@@ -103,8 +103,8 @@ rkron(x::AbstractArray, y::AbstractArray) = kron(y, x)
 
 function Base.kron(x::MPS, y::MPS; trunc::TruncationScheme=DefaultTruncation)
     (length(x) == length(y)) || throw(DimensionMismatch())
-    isempty(x) && throw(ArgumentError("input is empty."))
-    T = promote_type(scalar_type(x), scalar_type(y))
+    @assert !isempty(x)
+    T = promote_type(eltype(x), eltype(y))
     L = length(x)
     workspace = T[]
 
@@ -131,12 +131,12 @@ function Base.kron(x::MPS, y::MPS; trunc::TruncationScheme=DefaultTruncation)
     m = reshape(v * tie(m, (1, 2)), size(v, 1), size(m, 2), size(m, 3))
     r[L] = m
     mpsout = MPS(r)
-    rightorth!(mpsout, workspace, alg=SVDFact(trunc=trunc))
+    rightorth!(mpsout, workspace, alg=Orthogonalize(SVD(), trunc, normalize=false))
     return mpsout
 end
 
 function DensityOperator(psi::MPS; kwargs...)
-    T = scalar_type(psi)
+    T = eltype(psi)
     rho = kron(psi, psi'; kwargs...)
     ds = physical_dimensions(psi)
     return DensityOperatorMPS(rho, default_fusers(T, ds), identity_mps(T, ds))

@@ -400,7 +400,8 @@ function try_absorb_by_mul_impl(a::Vector{<:AbstractQuantumGate}, workspace::Abs
 end
 
 function _fuse_gate_impl(a::QuantumCircuit)
-    workspace = scalar_type(a)[]
+    T = compute_eltype(a.data)
+    workspace = T[]
     b = try_absorb_by_mul_impl(raw_data(a), workspace)
     r = similar(a)
     append!(r, b)

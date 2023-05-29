@@ -4,7 +4,7 @@ function svdcompress(psi::MPS{T, R}, alg::SVDArith = SVDArith()) where {T, R}
 	(L <= 1) && return copy(psi)
 	data = Vector{Array{T, 3}}(undef, L)
 
-	errs = Float64[]
+	# errs = Float64[]
 	data[1] = psi[1]
 	workspace = T[]
 
@@ -14,11 +14,11 @@ function svdcompress(psi::MPS{T, R}, alg::SVDArith = SVDArith()) where {T, R}
 		data[i] = u
 		v = Diagonal(s) * v
 		data[i+1] = @tensor tmp[-1 -2; -3] := v[-1, 1] * psi[i+1][1,-2,-3]
-		push!(errs, err)
+		# push!(errs, err)
 	end
 
 	r = MPS(data)
-	append!(errs, rightorth!(r, alg=SVDFact(trunc=trunc)))
+	rightorth!(r, alg=Orthogonalize(SVD(),trunc, normalize=false))
 	return r
 end
 

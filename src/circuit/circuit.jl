@@ -46,10 +46,10 @@ shift(x::QuantumCircuit, i::Int) = QuantumCircuit([shift(item, i) for item in ra
 
 Base.:*(x::QuantumCircuit, y::QuantumCircuit) = QuantumCircuit(vcat(raw_data(y), raw_data(x)))
 
-function scalar_type(x::QuantumCircuit)
+function compute_eltype(ms)
 	T = Float64
-	for gate in x
-		T = promote_type(T, scalar_type(gate))
+	for m in ms
+		T = promote_type(T, eltype(m))
 	end
 	return T
 end

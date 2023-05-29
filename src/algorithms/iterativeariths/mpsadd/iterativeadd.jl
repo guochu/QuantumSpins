@@ -8,7 +8,7 @@ end
 
 MPSIterativeAddCache(omps::MPS, imps::Vector{<:MPS}) = MPSIterativeAddCache(omps, imps, [init_cstorage_right(omps, y) for y in imps])
 
-scalar_type(x::MPSIterativeAddCache) = scalar_type(x.omps)
+Base.eltype(x::MPSIterativeAddCache) = eltype(x.omps)
 
 
 iterative_add(a::MPS, b::MPS, alg::OneSiteIterativeArith=OneSiteIterativeArith()) = iterative_add([a, b], alg)
@@ -20,19 +20,19 @@ function iterative_add(mpsxs::Vector{MPS{T, R}}, alg::OneSiteIterativeArith=OneS
     	@assert ds == physical_dimensions(mpsxs[i])
     end
     mpsout = randommps(T, physical_dimensions(mpsxs[1]), D=alg.D)
-    rightorth!(mpsout, alg=QRFact())
+    rightorth!(mpsout, alg=Orthogonalize(QR()))
 
     m = MPSIterativeAddCache(mpsout, mpsxs)
     kvals = compute!(m, alg)
     return m.omps, kvals[end]
 end
 
-sweep!(m::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[]) = vcat(_leftsweep!(m, alg, workspace), _rightsweep!(m, alg, workspace))
+sweep!(m::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = eltype(m)[]) = vcat(_leftsweep!(m, alg, workspace), _rightsweep!(m, alg, workspace))
 
 
-compute!(m::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[]) = iterative_compute!(m, alg, workspace)
+compute!(m::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = eltype(m)[]) = iterative_compute!(m, alg, workspace)
 
-function _leftsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[])
+function _leftsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = eltype(m)[])
 	mpsxs = x.imps
 	mpsy = x.omps
 	cstorages = x.hstorage
@@ -52,7 +52,7 @@ function _leftsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeArith, worksp
     return kvals
 end
 
-function _rightsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = scalar_type(m)[])
+function _rightsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeArith, workspace = eltype(m)[])
 	mpsxs = x.imps
 	mpsy = x.omps
 	cstorages = x.hstorage
@@ -60,7 +60,7 @@ function _rightsweep!(x::MPSIterativeAddCache, alg::OneSiteIterativeArith, works
 	L = length(mpsy)
 
     kvals = Float64[]
-    l = zeros(scalar_type(mpsy), 0, 0)
+    l = zeros(eltype(mpsy), 0, 0)
 
     for site in L:-1:2
         (alg.verbosity > 3) && println("Sweeping from right to left at bond: $site.")

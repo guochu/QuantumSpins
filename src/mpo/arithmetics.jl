@@ -1,6 +1,6 @@
 
 function LinearAlgebra.dot(hA::MPO, hB::MPO) 
-	(length(hA) == length(hB)) || throw(ArgumentError("dimension mismatch."))
+	(length(hA) == length(hB)) || throw(DimensionMismatch())
     hold = l_LL(hA)
     for i in 1:length(hA)
         hold = updateleft(hold, hA[i], hB[i])
@@ -18,10 +18,10 @@ distance(hA::MPO, hB::MPO) = _distance(hA, hB)
     id(m::MPO)
 Retuen an identity MPO from a given MPO
 """
-id(m::MPO) = MPO([reshape(_eye(scalar_type(m), size(item, 2)), 1, size(item, 2), 1, size(item, 4)) for item in raw_data(m)])
+id(m::MPO) = MPO([reshape(_eye(eltype(m), size(item, 2)), 1, size(item, 2), 1, size(item, 4)) for item in raw_data(m)])
 
 
-l_tr(h::Union{MPO, DensityOperatorMPS}) = ones(scalar_type(h), 1)
+l_tr(h::Union{MPO, DensityOperatorMPS}) = ones(eltype(h), 1)
 
 function LinearAlgebra.tr(h::MPO)
     isempty(h) && return 0.
@@ -34,7 +34,7 @@ function LinearAlgebra.tr(h::MPO)
 end
 
 function Base.:*(h::MPO, f::Number)
-	T = coerce_scalar_type(scalar_type(h), typeof(f))
+	T = coerce_scalar_type(eltype(h), typeof(f))
 	r = MPO{T}(copy(raw_data(h)))
 	r[1] *= convert(T, f)
 	return r
@@ -49,9 +49,9 @@ Base.:/(h::MPO, f::Number) = h * (1/f)
     addition of two MPOs
 """
 function Base.:+(hA::MPO, hB::MPO)
+    @assert !isempty(hA)
     (length(hA) == length(hB)) || throw(DimensionMismatch())
-    (isempty(hA)) && error("input mpo is empty.")
-    T = promote_type(scalar_type(hA), scalar_type(hB))
+    T = promote_type(eltype(hA), eltype(hB))
     L = length(hA)
     r = Vector{Array{T, 4}}(undef, L)
     r[1] = cat(hA[1], hB[1], dims=3)
@@ -71,8 +71,8 @@ Base.:-(h::MPO) = -1 * h
     Multiplication of mps by an mpo.
 """
 function Base.:*(h::MPO, psi::MPS)
+    @assert !isempty(h)
     (length(h) == length(psi)) || throw(DimensionMismatch())
-    isempty(h) && throw(ArgumentError("input operator is empty."))
     r = [@tensor tmp[-1 -2; -3 -4 -5] := a[-1, -3, -4, 1] * b[-2, 1, -5] for (a, b) in zip(raw_data(h), raw_data(psi))]
     return MPS([tie(item,(2,1,2)) for item in r])
 end
@@ -86,8 +86,8 @@ Base.:*(h::MPO, psi::DensityOperatorMPS) = DensityOperatorMPS(h * psi.data, psi.
 Base.:*(hA::MPO, hB::MPO) = MPO(_mult_n_n(raw_data(hA), raw_data(hB)))
 
 function _mult_n_n(hA::Vector{<:MPOTensor}, hB::Vector{<:MPOTensor})
+    @assert !isempty(hA)
     (length(hA) == length(hB)) || throw(DimensionMismatch())
-    isempty(hA) && throw(ArgumentError("input operator is empty."))
     r = [@tensor tmp[-1 -2 -3; -4 -5 -6] := aj[-1, -3, -4, 1] * bj[-2, 1, -5, -6] for (aj, bj) in zip(hA, hB)]
     return [tie(item, (2,1,2,1)) for item in r]
 end
@@ -100,11 +100,11 @@ const MPO_APPROX_EQUAL_ATOL = 1.0e-12
 """
 Base.isapprox(a::MPO, b::MPO; atol=MPO_APPROX_EQUAL_ATOL) = distance2(a, b) <= atol
 
-r_RR(psiA::MPS, h::MPO, psiB::MPS) = reshape(_eye(promote_type(scalar_type(psiA), scalar_type(h), scalar_type(psiB)), space_r(psiA), space_r(h) * space_r(psiB)),
+r_RR(psiA::MPS, h::MPO, psiB::MPS) = reshape(_eye(promote_type(eltype(psiA), eltype(h), eltype(psiB)), space_r(psiA), space_r(h) * space_r(psiB)),
 	space_r(psiA), space_r(h), space_r(psiB))
 
 
-l_LL(psiA::MPS, h::MPO, psiB::MPS) = reshape(_eye(promote_type(scalar_type(psiA), scalar_type(h), scalar_type(psiB)), space_l(psiA), space_l(h) * space_l(psiB)),
+l_LL(psiA::MPS, h::MPO, psiB::MPS) = reshape(_eye(promote_type(eltype(psiA), eltype(h), eltype(psiB)), space_l(psiA), space_l(h) * space_l(psiB)),
 	space_l(psiA), space_l(h), space_l(psiB))
 
 
@@ -126,14 +126,14 @@ expectation(h::MPO, psi::MPS) = expectation(psi, h, psi)
 
 
 function LinearAlgebra.ishermitian(h::MPO)
-    isempty(h) && throw(ArgumentError("input operator is empty."))
+    @assert !isempty(h)
     return isapprox(h, h', atol=1.0e-10) 
 end
 
 
 MPO(psi::DensityOperatorMPS) = MPO([@tensor o[-1 -2; -3 -4] := psi[i][-1,1,-3]*psi.fusers[i][-2,-4,1] for i in 1:length(psi)])
 function DensityOperator(h::MPO)
-    T = scalar_type(h)
+    T = eltype(h)
     # fusers = [reshape(_eye(T, size(m, 2) * size(m, 4)), size(m, 2), size(m, 4), size(m, 2) * size(m, 4)) for m in raw_data(h)]
     ds = physical_dimensions(h)
     fusers = default_fusers(T, ds)

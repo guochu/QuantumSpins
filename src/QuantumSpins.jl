@@ -14,25 +14,26 @@ import LinearAlgebra
 
 
 # auxiliary
-export contract, AbstractCoefficient, Coefficient, value, coeff, scalar_type, is_constant
+export contract, AbstractCoefficient, Coefficient, value, coeff, scalar_type, isconstant
 export NoTruncation, TruncateCutoff, TruncateDim, MPSTruncation, TruncationScheme
-export permute, tie, deparallelise, tsvd!, texp, tqr!, tlq!, entropy, renyi_entropy
-export dot, norm, tr, normalize!, normalize
-export AbstractMatrixFactorization, QRFact, SVDFact
+export permute, tie, tsvd!, texp, tqr!, tlq!, entropy, renyi_entropy
+export dot, norm, tr, normalize!, normalize, leftdeparallel, rightdeparallel
 
 # mps
-export AbstractMPS, MPS, leftorth!, rightorth!, iscanonical, canonicalize!, bond_dimension, bond_dimensions, distance2, distance, increase_bond!
+export AbstractMPS, MPS, space_l, space_r, isleftcanonical, isrightcanonical
+export Orthogonalize, QR, SVD, leftorth!, rightorth!, iscanonical, canonicalize!
+export bond_dimension, bond_dimensions, distance2, distance, increase_bond!
 export physical_dimensions, DensityOperatorMPS, DensityOperator, infinite_temperature_state, prodmps, randommps, isstrict, space_l, space_r
 
 # mpo
 export AbstractMPO, MPO, prodmpo, randommpo, id, expectation
-export AbstractCompression, SVDCompression, Deparallelise, compress!
+export AbstractCompression, SVDCompression, leftdeparallel!, rightdeparallel!, deparallel!, Deparallelise, compress!
 
 # circuit
 export QuantumGate, QuantumCircuit, apply!, positions, op, shift, fuse_gates
 
 # operators, easier interface for building quantum operators incrementally, and used for TEBD. Should it really be here in this package?
-export QTerm, QuantumOperator, matrix, add!, qterms, superoperator, add_unitary!, add_dissipation!
+export QTerm, QuantumOperator, matrix, add!, qterms, superterm, superoperator, add_unitary!, add_dissipation!
 export SuperTerm, SuperOperator, simplify
 
 # algorithms
@@ -78,17 +79,17 @@ include("auxiliary/factorize.jl")
 include("auxiliary/simplelanczos.jl")
 
 # mps
-include("mps/abstractdefs.jl")
-include("mps/transfer.jl")
-include("mps/bondview.jl")
-include("mps/finitemps.jl")
-include("mps/density_operator.jl")
-include("mps/orth.jl")
-include("mps/initializers.jl")
-include("mps/arithmetics.jl")
+include("states/abstractmps.jl")
+include("states/transfer.jl")
+include("states/bondview.jl")
+include("states/finitemps.jl")
+include("states/density_operator.jl")
+include("states/orth.jl")
+include("states/initializers.jl")
+include("states/arithmetics.jl")
 
 # mpo
-include("mpo/abstractdefs.jl")
+include("mpo/abstractmpo.jl")
 include("mpo/transfer.jl")
 include("mpo/finitempo.jl")
 include("mpo/compress.jl")
