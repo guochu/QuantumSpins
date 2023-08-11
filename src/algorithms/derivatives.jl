@@ -7,6 +7,20 @@ function c_prime(x::AbstractMatrix, hleft::MPSTensor, hright::MPSTensor)
     @tensor tmp[-1; -2] := (hleft[-1, 1, 2] * x[2, 3]) * hright[-2, 1, 3]
 end
 
+struct CentralHeff{T}
+	mpojhleft::Array{T, 5}
+	hright::Array{T, 3}
+end
+
+function Heff(mpoj::MPOTensor, hleft::MPSTensor, hright::MPSTensor)
+	@tensor tmp[1,4,5,3,6] := hleft[1,2,3] * mpoj[2,4,5,6]
+	return CentralHeff(tmp, hright)
+end
+
+function ac_prime(x::MPSTensor, heff::CentralHeff)
+	@tensor tmp[1,2,7] := (heff.mpojhleft[1,2,3,4,5] * x[4,5,6]) * heff.hright[7,3,6]
+end
+
 # # the convention of mpotensor is assumed to be permute(m, (2,3,1,4))
 # function ac_prime_fast(x::MPSTensor, m::MPOTensor, hleft::MPSTensor, hright::MPSTensor, workspace::AbstractVector) 
 # 	# @tensor tmp[-1 -2; -3] := ((hleft[-1, 1, 2] * x[2,3,4]) * m[1,-2,5,3]) * hright[-3,5,4]

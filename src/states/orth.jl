@@ -9,7 +9,8 @@ struct Orthogonalize{A<:Union{QR, SVD}, T<:TruncationScheme} <: MatrixProductOrt
 	trunc::T
 	normalize::Bool
 end
-Orthogonalize(a::Union{QR, SVD}=SVD(), trunc::TruncationScheme=NoTruncation(); normalize::Bool=false) = Orthogonalize(a, trunc, normalize)
+Orthogonalize(a::Union{QR, SVD}, trunc::TruncationScheme; normalize::Bool=false) = Orthogonalize(a, trunc, normalize)
+Orthogonalize(a::Union{QR, SVD} = SVD(); trunc::TruncationScheme=NoTruncation(), normalize::Bool=false) = Orthogonalize(a, trunc, normalize)
 
 
 leftorth!(psi::MPS, workspace::AbstractVector=Vector{eltype(psi)}(); alg::Orthogonalize = Orthogonalize()) = _leftorth!(psi, alg.orth, alg.trunc, alg.normalize, workspace)

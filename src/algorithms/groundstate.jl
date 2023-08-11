@@ -35,7 +35,8 @@ function leftsweep!(m::ExpectationCache, alg::DMRG)
 	for site in 1:length(mps)-1
 		(alg.verbosity > 3) && println("sweeping from left to right at site: $site")
 		# eigvals, vecs = eigsolve(x->ac_prime(x, mpo[site], hstorage[site], hstorage[site+1]), mps[site], 1, :SR, Lanczos())
-		_eigval, _eigvec, info = simple_lanczos_solver(x->ac_prime(x, mpo[site], hstorage[site], hstorage[site+1]), mps[site], "SR", eig_maxiter, eig_tol, verbosity=0)
+		hj = Heff(mpo[site], hstorage[site], hstorage[site+1])
+		_eigval, _eigvec, info = simple_lanczos_solver(x->ac_prime(x, hj), mps[site], "SR", eig_maxiter, eig_tol, verbosity=0)
 		push!(Energies, _eigval)
 		(alg.verbosity > 1) && println("Energy after optimization on site $site is $(Energies[end])")
 		# galerkin error
@@ -61,7 +62,8 @@ function rightsweep!(m::ExpectationCache, alg::DMRG)
 	for site in length(mps):-1:2
 		(alg.verbosity > 3) && println("sweeping from right to left at site: $site")
 		# eigvals, vecs = eigsolve(x->ac_prime(x, mpo[site], hstorage[site], hstorage[site+1]), mps[site], 1, :SR, Lanczos())
-		_eigval, _eigvec, info = simple_lanczos_solver(x->ac_prime(x, mpo[site], hstorage[site], hstorage[site+1]), mps[site], "SR", eig_maxiter, eig_tol, verbosity=0)
+		hj = Heff(mpo[site], hstorage[site], hstorage[site+1])
+		_eigval, _eigvec, info = simple_lanczos_solver(x->ac_prime(x, hj), mps[site], "SR", eig_maxiter, eig_tol, verbosity=0)
 		push!(Energies, _eigval)
 		(alg.verbosity > 1) && println("Energy after optimization on site $site is $(Energies[end])")		
 		# galerkin error
