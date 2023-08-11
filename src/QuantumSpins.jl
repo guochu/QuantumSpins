@@ -14,7 +14,7 @@ import LinearAlgebra
 
 
 # auxiliary
-export contract, AbstractCoefficient, Coefficient, value, coeff, scalar_type, isconstant
+export contract, AbstractCoefficient, Coefficient, value, coeff, isconstant
 export NoTruncation, TruncateCutoff, TruncateDim, MPSTruncation, TruncationScheme
 export permute, tie, tsvd!, texp, tqr!, tlq!, entropy, renyi_entropy
 export dot, norm, tr, normalize!, normalize, leftdeparallel, rightdeparallel
@@ -23,7 +23,7 @@ export dot, norm, tr, normalize!, normalize, leftdeparallel, rightdeparallel
 export AbstractMPS, MPS, space_l, space_r, isleftcanonical, isrightcanonical
 export Orthogonalize, QR, SVD, leftorth!, rightorth!, iscanonical, canonicalize!
 export bond_dimension, bond_dimensions, distance2, distance, increase_bond!
-export physical_dimensions, DensityOperatorMPS, DensityOperator, infinite_temperature_state, prodmps, randommps, isstrict, space_l, space_r
+export physical_dimensions, DensityOperatorMPS, DensityOperator, infinite_temperature_state, prodmps, randommps, isstrict
 
 # mpo
 export AbstractMPO, MPO, prodmpo, randommpo, id, expectation
