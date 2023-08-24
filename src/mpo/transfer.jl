@@ -44,12 +44,12 @@ function updateleft(hold::AbstractArray{T, 3}, psiAj::MPSTensor, hj::Nothing, ps
 	return hnew
 end
 
-function updateright(hold::AbstractMatrix, psiAj::MPSTensor, hj::Nothing, psiBj::MPSTensor) where {T <: Number}
+function updateright(hold::AbstractMatrix, psiAj::MPSTensor, hj::Nothing, psiBj::MPSTensor)
 	@tensor hnew[-1; -3] := hold[1,2] * psiBj[-3,3,2] * conj(psiAj[-1,3,1])
 	return hnew
 end
 
-function updateleft(hold::AbstractMatrix, psiAj::MPSTensor, hj::Nothing, psiBj::MPSTensor) where {T <: Number}
+function updateleft(hold::AbstractMatrix, psiAj::MPSTensor, hj::Nothing, psiBj::MPSTensor)
 	@tensor hnew[-1; -3] := hold[1,2] * psiBj[2,3,-3] * conj(psiAj[1,3,-1])
 	return hnew
 end
