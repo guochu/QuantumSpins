@@ -2,7 +2,7 @@ module QuantumSpins
 
 using Logging: @warn
 using Parameters, KrylovKit, TensorOperations, Statistics
-using LinearAlgebra: Diagonal, dot, norm, tr, mul!, normalize!, normalize, Symmetric, eigen
+using LinearAlgebra: Diagonal, dot, norm, tr, mul!, axpy!, normalize!, normalize, Symmetric, eigen
 import LinearAlgebra
 
 # verbosity level

@@ -66,6 +66,9 @@ function LinearAlgebra.normalize!(psi::DensityOperatorMPS)
     return psi
 end
 
+function ac_prime(x::MPSTensor, cleft::AbstractMatrix, cright::AbstractMatrix) 
+    @tensor tmp[-1 -2; -3] := cleft[-1, 1] * x[1, -2, 2] * cright[-3, 2]
+end
 
 """
     Base.:+(psiA::MPS, psiB::MPS) 
