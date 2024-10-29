@@ -1,10 +1,5 @@
 module QuantumSpins
 
-using Logging: @warn
-using Parameters, KrylovKit, TensorOperations, Statistics
-using LinearAlgebra: Diagonal, dot, norm, tr, mul!, axpy!, normalize!, normalize, Symmetric, eigen
-import LinearAlgebra
-
 # verbosity level
 # verbosity = 0: absolute no message
 # verbosity = 1: only output important warnings
@@ -58,6 +53,12 @@ export compress, stable_compress, iterative_compress
 
 # utilities
 export spin_half_matrices, ising_chain, heisenberg_chain, boundary_driven_xxz
+
+
+using Logging: @warn
+using Parameters, KrylovKit, TensorOperations, Statistics
+using LinearAlgebra: LinearAlgebra, Diagonal, dot, norm, tr, mul!, axpy!, normalize!, normalize, Symmetric, eigen
+# import LinearAlgebra
 
 module Defaults
 	const maxiter = 100
